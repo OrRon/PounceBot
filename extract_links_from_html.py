@@ -1,47 +1,66 @@
-
 import os
 from bs4 import BeautifulSoup
 import re
 import pyperclip
+import argparse
+import platform
+
+def parse_html(html):
+    # Parse the HTML with BeautifulSoup
+    soup = BeautifulSoup(html, 'html.parser')
+
+    # Find all <a> tags that match the specified format
+    a_tags = soup.find_all('a', href=re.compile(r"https://www\.linkedin\.com/in/ACwAA\w+"))
+
+    # Create a dictionary to store links and their corresponding values
+    link_dict = {}
+
+    # Loop over each <a> tag and add its link and value to the dictionary
+    for a in a_tags:
+        link = a['href']
+        value = a.text.strip()
+        if value not in link_dict.values():
+            link_dict[link] = value
+
+    return link_dict
 
 
-msg = '''Hi %s,
+def open_browser_for_each_entry(browser_cmd, msg, my_name, entries):
+    for linkedin_profile_url, linkedin_profile_name in entries.items():
+        name = linkedin_profile_name.split(' ')[0]
+        message_to_send = msg % (name, my_name)
+        print(message_to_send)
+        pyperclip.copy(message_to_send)
+        cmd = browser_cmd % linkedin_profile_url
+        os.system(cmd)
+        input('<Enter> for next entry')
 
-I'm studying the area of Privileged Access and would love to connect and learn from your experience in the field.
 
-Thank you,
-~ Or'''
+def main():
+    msg = '''Hi %s,
+
+    I'm studying the area of Privileged Access and would love to connect and learn from your experience in the field.
+
+    Thank you,
+    ~ %s'''
+    
+    if platform.system() == "Windows":
+        cmd = '''"C:\Program Files\Google\Chrome\Application\chrome.exe" %s'''
+    else:
+        cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--my_name", help="Your name", type=str, required=True)
+    parser.add_argument("--src", help="html file path", type=str, required=True)
+    args = parser.parse_args()
+
+    print(f'src = [{args.src}]\nmy_name = [{args.my_name}]\nchrome_cmd = [{cmd}]\nmsg = [{msg}]')
+    entries = {}
+    with open(args.src, 'r', encoding='utf8') as file:
+        html = file.read()
+        entries = parse_html(html)
+        open_browser_for_each_entry(cmd, msg, args.my_name, entries)
 
 
-open_b = '''open -a "Google Chrome" %s''' #FIX_ME - check this works
-
-# Open the HTML file
-with open('sheet_or.html', 'r', encoding='utf8') as file:
-    html = file.read()
-
-# Parse the HTML with BeautifulSoup
-soup = BeautifulSoup(html, 'html.parser')
-
-# Find all <a> tags that match the specified format
-a_tags = soup.find_all('a', href=re.compile(r"https://www\.linkedin\.com/in/ACwAA\w+"))
-
-# Create a dictionary to store links and their corresponding values
-link_dict = {}
-
-# Loop over each <a> tag and add its link and value to the dictionary
-for a in a_tags:
-    link = a['href']
-    value = a.text.strip()
-    if value not in link_dict.values():
-        link_dict[link] = value
-
-# Print the de-duplicated links and their values
-for link, value in link_dict.items():
-    name = value.split(' ')[0]
-    print (msg % name)
-    pyperclip.copy(msg % name)
-    print(f"Link: {link}, Value: {value}, Name: {name}")
-    cmd = open_b % link
-    os.system(cmd)
-    input()
-
+if __name__ == '__main__':
+    main()
