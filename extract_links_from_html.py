@@ -51,11 +51,9 @@ def open_browser_for_each_entry(browser_cmd, msg, my_name, entries):
 
 def main():
     msg = '''Hi %s,
-
-    I'm studying the area of Privileged Access and would love to connect and learn from your experience in the field.
-
-    Thank you,
-    ~ %s'''
+I'm studying the area of Privileged Access and would love to connect and learn from your experience in the field.
+Thank you,
+~ %s'''
     
     if platform.system() == "Windows":
         cmd = '''"C:\Program Files\Google\Chrome\Application\chrome.exe" %s'''
