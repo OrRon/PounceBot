@@ -5,21 +5,34 @@ import pyperclip
 import argparse
 import platform
 
+def transform_linkedin_link(link):
+    base_link = 'https://www.linkedin.com/in/'
+    match = re.search(r"lead\/(.*?),NAME_SEARCH", link)
+
+    if match:
+        lead_id = match.group(1)
+        print("Lead ID:", lead_id)
+        return base_link + lead_id
+    else:
+        print("No match found")
+        return link
+
 def parse_html(html):
     # Parse the HTML with BeautifulSoup
     soup = BeautifulSoup(html, 'html.parser')
 
     # Find all <a> tags that match the specified format
-    a_tags = soup.find_all('a', href=re.compile(r"https://www\.linkedin\.com/in/ACwAA\w+"))
+    a_tags = soup.find_all('a', href=re.compile(r"https://www\.linkedin\.com/(?!.*company)"))
 
     # Create a dictionary to store links and their corresponding values
     link_dict = {}
 
     # Loop over each <a> tag and add its link and value to the dictionary
     for a in a_tags:
-        link = a['href']
+        link = transform_linkedin_link(a['href'])
         value = a.text.strip()
-        if value not in link_dict.values():
+        print(link)
+        if link not in link_dict.keys():
             link_dict[link] = value
 
     return link_dict
@@ -59,6 +72,7 @@ def main():
     with open(args.src, 'r', encoding='utf8') as file:
         html = file.read()
         entries = parse_html(html)
+        print(f'{len(entries)} entries loaded')
         open_browser_for_each_entry(cmd, msg, args.my_name, entries)
 
 
