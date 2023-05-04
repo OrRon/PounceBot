@@ -50,7 +50,7 @@ def parse_html(html):
     return link_dict
 
 
-def open_browser_for_each_entry(browser_cmd, messages, entries):
+def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive):
     idx = 0
     for linkedin_profile_url, linkedin_profile_name in entries.items():
         name = linkedin_profile_name.split(' ')[0]
@@ -64,6 +64,8 @@ def open_browser_for_each_entry(browser_cmd, messages, entries):
         time.sleep(7)
         result = send_request_gui(message_to_send)
         write_to_log({'profile': linkedin_profile_url,  'message': message_to_send, 'result' : result})
+        if is_interactive:
+            input("<Enter> to proceed")
 
 def read_messages(config):
     messages = []
@@ -85,6 +87,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--src", help="html file path", type=str, required=True)
+    parser.add_argument("-i", help="wait for user input between profiles", action='store_true', default=False)
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
@@ -101,7 +104,7 @@ def main():
         html = file.read()
         entries = parse_html(html)
         print(f'{len(entries)} entries loaded')
-        open_browser_for_each_entry(cmd, messages, entries)
+        open_browser_for_each_entry(cmd, messages, entries, args.i)
 
 
 def send_request_gui(msg):
