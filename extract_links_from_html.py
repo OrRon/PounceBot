@@ -4,6 +4,8 @@ import re
 import pyperclip
 import argparse
 import platform
+import configparser
+
 
 def transform_linkedin_link(link):
     base_link = 'https://www.linkedin.com/in/'
@@ -11,10 +13,8 @@ def transform_linkedin_link(link):
 
     if match:
         lead_id = match.group(1)
-        print("Lead ID:", lead_id)
         return base_link + lead_id
     else:
-        print("No match found")
         return link
 
 def parse_html(html):
@@ -38,40 +38,53 @@ def parse_html(html):
     return link_dict
 
 
-def open_browser_for_each_entry(browser_cmd, msg, my_name, entries):
+def open_browser_for_each_entry(browser_cmd, messages, entries):
+    idx = 0
     for linkedin_profile_url, linkedin_profile_name in entries.items():
         name = linkedin_profile_name.split(' ')[0]
-        message_to_send = msg % (name, my_name)
+        msg = messages[idx % len(messages)]
+        idx = idx + 1
+        message_to_send = msg % (name)
         print(message_to_send)
         pyperclip.copy(message_to_send)
         cmd = browser_cmd % linkedin_profile_url
         os.system(cmd)
         input('<Enter> for next entry')
 
+def read_messages(config):
+    messages = []
+    for i in range(1,10):
+        try:
+            msg = config['general']['msg' + str(i)]
+            msg = msg.replace('<br>', '\n')
+            messages.append(msg)
+        except:
+            pass
+    return messages
+
 
 def main():
-    msg = '''Hi %s,
-I'm studying the area of Privileged Access and would love to connect and learn from your experience in the field.
-Thank you,
-~ %s'''
-    
     if platform.system() == "Windows":
         cmd = '''"C:\Program Files\Google\Chrome\Application\chrome.exe" %s'''
     else:
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--my_name", help="Your name", type=str, required=True)
     parser.add_argument("--src", help="html file path", type=str, required=True)
     args = parser.parse_args()
 
-    print(f'src = [{args.src}]\nmy_name = [{args.my_name}]\nchrome_cmd = [{cmd}]\nmsg = [{msg}]')
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    
+    messages = read_messages(config)
+
+    print(f'src = [{args.src}]\nchrome_cmd = [{cmd}]\nmessages = [{messages}]')
     entries = {}
     with open(args.src, 'r', encoding='utf8') as file:
         html = file.read()
         entries = parse_html(html)
         print(f'{len(entries)} entries loaded')
-        open_browser_for_each_entry(cmd, msg, args.my_name, entries)
+        open_browser_for_each_entry(cmd, messages, entries)
 
 
 if __name__ == '__main__':
