@@ -5,6 +5,18 @@ import pyperclip
 import argparse
 import platform
 import configparser
+import time
+import pyautogui
+import json
+
+LOG_PATH = ''
+
+
+def write_to_log(l):
+    with open(LOG_PATH, 'a') as log_file:
+        log_file.write(json.dumps(l, indent = 4) + '\n')
+        log_file.close()
+    print(l, LOG_PATH)
 
 
 def transform_linkedin_link(link):
@@ -49,7 +61,9 @@ def open_browser_for_each_entry(browser_cmd, messages, entries):
         pyperclip.copy(message_to_send)
         cmd = browser_cmd % linkedin_profile_url
         os.system(cmd)
-        input('<Enter> for next entry')
+        time.sleep(7)
+        result = send_request_gui(message_to_send)
+        write_to_log({'profile': linkedin_profile_url,  'message': message_to_send, 'result' : result})
 
 def read_messages(config):
     messages = []
@@ -78,6 +92,9 @@ def main():
     
     messages = read_messages(config)
 
+    global LOG_PATH
+    LOG_PATH = config['general']['log_path']
+
     print(f'src = [{args.src}]\nchrome_cmd = [{cmd}]\nmessages = [{messages}]')
     entries = {}
     with open(args.src, 'r', encoding='utf8') as file:
@@ -86,6 +103,62 @@ def main():
         print(f'{len(entries)} entries loaded')
         open_browser_for_each_entry(cmd, messages, entries)
 
+
+def send_request_gui(msg):
+    click_order_connect1 = [os.path.join('img', 'more.png'), os.path.join('img', 'more_connect.png')]
+    click_order_connect2 = [os.path.join('img', 'connect_main.png')]
+
+    click_send_msg = [os.path.join('img','add_note.png'), os.path.join('img','send.png')]
+
+    print(msg)
+
+    ## Connect
+
+    image_location = pyautogui.locateOnScreen(click_order_connect1[0])
+    if image_location:
+        image_center = pyautogui.center(image_location)
+        pyautogui.click(image_center.x, image_center.y)
+        time.sleep(0.5)
+        image_location = pyautogui.locateOnScreen(click_order_connect1[1])
+        if image_location:
+            image_center = pyautogui.center(image_location)
+            pyautogui.click(image_center.x, image_center.y)
+        else:
+            return "unable to find the more_connect button"
+    else:
+        print("unable to find the more button")
+        image_location = pyautogui.locateOnScreen(click_order_connect2[0])
+        if image_location:
+            image_center = pyautogui.center(image_location)
+            pyautogui.click(image_center.x, image_center.y)
+        else:
+            return "unable to find the connect button"
+
+    ## Send a message if required
+
+
+    print("Attempting to send a message")
+    time.sleep(3)
+    image_location = pyautogui.locateOnScreen(click_send_msg[0])
+    if image_location:
+        print("Found add a note")
+        image_center = pyautogui.center(image_location)
+        pyautogui.click(image_center.x, image_center.y)
+
+        time.sleep(3)
+        pyautogui.typewrite(msg)
+        time.sleep(2)
+
+        image_location = pyautogui.locateOnScreen(click_send_msg[1])
+        if image_location:
+            image_center = pyautogui.center(image_location)
+            pyautogui.click(image_center.x, image_center.y)
+            return "success"
+        else:
+            return "Couldn't find send:" + click_send_msg[1]
+    else:
+        return "Couldn't find add a note"
+    return "failed"
 
 if __name__ == '__main__':
     main()
