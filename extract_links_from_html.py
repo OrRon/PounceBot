@@ -117,26 +117,22 @@ def send_request_gui(msg):
 
     ## Connect
 
-    image_location = pyautogui.locateOnScreen(click_order_connect1[0])
+    image_location = pyautogui.locateOnScreen(click_order_connect2[0])
     if image_location:
         image_center = pyautogui.center(image_location)
         pyautogui.click(image_center.x, image_center.y)
-        time.sleep(0.5)
-        image_location = pyautogui.locateOnScreen(click_order_connect1[1])
-        if image_location:
-            image_center = pyautogui.center(image_location)
-            pyautogui.click(image_center.x, image_center.y)
-        else:
-            return "unable to find the more_connect button"
     else:
-        print("unable to find the more button")
-        image_location = pyautogui.locateOnScreen(click_order_connect2[0])
+        image_location = pyautogui.locateOnScreen(click_order_connect1[0])
         if image_location:
             image_center = pyautogui.center(image_location)
             pyautogui.click(image_center.x, image_center.y)
-        else:
-            return "unable to find the connect button"
-
+            time.sleep(0.5)
+            image_location = pyautogui.locateOnScreen(click_order_connect1[1])
+            if image_location:
+                image_center = pyautogui.center(image_location)
+                pyautogui.click(image_center.x, image_center.y)
+            else:
+                return "unable to find the more_connect button"
     ## Send a message if required
 
 
