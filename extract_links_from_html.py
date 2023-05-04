@@ -108,7 +108,12 @@ def main():
 
 
 def send_request_gui(msg):
-    click_order_connect1 = [os.path.join('img', 'more.png'), os.path.join('img', 'more_connect.png')]
+    click_order_connect1 = [os.path.join('img', 'more.png'),
+                            os.path.join('img', 'more2.png'),
+                            os.path.join('img', 'more3.png'),
+                            os.path.join('img', 'more4.png'),
+                            os.path.join('img', 'more5.png'),
+                            os.path.join('img', 'more_connect.png')]
     click_order_connect2 = [os.path.join('img', 'connect_main.png')]
 
     click_send_msg = [os.path.join('img','add_note.png'), os.path.join('img','send.png')]
@@ -122,17 +127,27 @@ def send_request_gui(msg):
         image_center = pyautogui.center(image_location)
         pyautogui.click(image_center.x, image_center.y)
     else:
-        image_location = pyautogui.locateOnScreen(click_order_connect1[0])
+        is_found = False
+        image_location = False
+        for img in click_order_connect1:
+            print("trying " + img)
+            image_location = pyautogui.locateOnScreen(img, confidence=0.85)
+            if image_location:
+                is_found = True
+                break
+        print(image_location)
         if image_location:
             image_center = pyautogui.center(image_location)
             pyautogui.click(image_center.x, image_center.y)
             time.sleep(0.5)
-            image_location = pyautogui.locateOnScreen(click_order_connect1[1])
+            image_location = pyautogui.locateOnScreen(click_order_connect1[-1])
             if image_location:
                 image_center = pyautogui.center(image_location)
                 pyautogui.click(image_center.x, image_center.y)
             else:
                 return "unable to find the more_connect button"
+        else:
+            return "unable to find more button"
     ## Send a message if required
 
 
