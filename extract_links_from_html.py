@@ -11,6 +11,7 @@ import json
 
 
 LOG_PATH = ''
+CONFIDENCE = 0.85
 
 
 def write_to_log(l):
@@ -63,7 +64,7 @@ def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive, 
         cmd = browser_cmd % linkedin_profile_url
         os.system(cmd)
         time.sleep(7)
-        result = send_request_gui(message_to_send, 0.85,is_dry_run)
+        result = send_request_gui(message_to_send, is_dry_run, CONFIDENCE)
         write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
         if is_interactive:
             input("<Enter> to proceed")
@@ -79,7 +80,6 @@ def read_messages(config):
         except:
             pass
     return messages
-
 
 def main():
     if platform.system() == "Windows":
@@ -98,8 +98,11 @@ def main():
 
     messages = read_messages(config)
 
+
     global LOG_PATH
     LOG_PATH = config['general']['log_path']
+    global CONFIDENCE
+    CONFIDENCE = float(config['general']['confidence'])
 
     print(f'src = [{args.src}]\nchrome_cmd = [{cmd}]\nmessages = [{messages}]')
     entries = {}
@@ -118,7 +121,7 @@ def find_img_in_screen(imgs, confidence):
     return False
 
 
-def send_request_gui(msg, confidence, is_dry_run):
+def send_request_gui(msg, is_dry_run, confidence):
     ## Connect main
     connect_image_main = [os.path.join('img', 'connect_main.png'), os.path.join('img', 'connect_main2.png')]
 
