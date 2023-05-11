@@ -16,8 +16,15 @@ CONFIDENCE = 0.85
 SLEEP_START = 3
 SLEEP_END = 12
 MOUSE_MOVE_DURATION = 0.25
+COORDINATE_FACTOR = 2
 
 screen_width , screen_height = pyautogui.size()
+
+
+class Point():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 def get_next_pos(): ## Make sure not to hover over the buttons
     x = random.randint(0, screen_width - 1)
@@ -99,6 +106,8 @@ def read_messages(config):
 def main():
     if platform.system() == "Windows":
         cmd = '''"C:\Program Files\Google\Chrome\Application\chrome.exe" %s'''
+        global COORDINATE_FACTOR
+        COORDINATE_FACTOR = 1
     else:
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
@@ -143,7 +152,7 @@ def find_img_in_screen(imgs, confidence):
         image_location = pyautogui.locateOnScreen(i, confidence=confidence)
         if image_location:
             image_center = pyautogui.center(image_location)
-            return image_center
+            return Point(image_center.x / COORDINATE_FACTOR, image_center.y / COORDINATE_FACTOR)
     return False
 
 
