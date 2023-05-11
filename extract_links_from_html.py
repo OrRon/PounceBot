@@ -9,6 +9,7 @@ import time
 import pyautogui
 import json
 
+
 LOG_PATH = ''
 
 
@@ -62,7 +63,7 @@ def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive, 
         cmd = browser_cmd % linkedin_profile_url
         os.system(cmd)
         time.sleep(7)
-        result = send_request_gui(message_to_send, is_dry_run)
+        result = send_request_gui(message_to_send, 0.85,is_dry_run)
         write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
         if is_interactive:
             input("<Enter> to proceed")
@@ -108,76 +109,66 @@ def main():
         print(f'{len(entries)} entries loaded')
         open_browser_for_each_entry(cmd, messages, entries, args.i, args.d)
 
-
-def send_request_gui(msg, is_dry_run):
-    click_order_connect1 = [os.path.join('img', 'more.png'),
-                            os.path.join('img', 'more2.png'),
-                            os.path.join('img', 'more3.png'),
-                            os.path.join('img', 'more4.png'),
-                            os.path.join('img', 'more5.png'),
-                            os.path.join('img', 'more_connect.png')]
-    click_order_connect2 = [os.path.join('img', 'connect_main.png')]
-
-    click_send_msg = [os.path.join('img', 'add_note.png'), os.path.join('img', 'send.png')]
-
-    print(msg)
-
-    ## Connect
-
-    image_location = pyautogui.locateOnScreen(click_order_connect2[0], confidence=0.85)
-    if image_location:
-        image_center = pyautogui.center(image_location)
-        pyautogui.click(image_center.x, image_center.y)
-    else:
-        is_found = False
-        image_location = False
-        for img in click_order_connect1:
-            print("trying " + img)
-            image_location = pyautogui.locateOnScreen(img, confidence=0.85)
-            if image_location:
-                is_found = True
-                break
-        print(image_location)
+def find_img_in_screen(imgs, confidence):
+    for i in imgs:
+        image_location = pyautogui.locateOnScreen(i, confidence=confidence)
         if image_location:
             image_center = pyautogui.center(image_location)
-            pyautogui.click(image_center.x, image_center.y)
-            time.sleep(0.5)
-            image_location = pyautogui.locateOnScreen(click_order_connect1[-1], confidence=0.85)
-            if image_location:
-                image_center = pyautogui.center(image_location)
-                pyautogui.click(image_center.x, image_center.y)
-            else:
-                return "unable to find the more_connect button"
-        else:
-            return "unable to find more button"
-    ## Send a message if required
+            return image_center
+    return False
 
-    if is_dry_run:
-        print("is dry run")
-        return
-    print("Attempting to send a message")
 
+def send_request_gui(msg, confidence, is_dry_run):
+    ## Connect main
+    connect_image_main = [os.path.join('img', 'connect_main.png'), os.path.join('img', 'connect_main2.png')]
+
+    ## More + more_connect
+    more = [os.path.join('img', 'more.png'),
+            os.path.join('img', 'more2.png'),
+            os.path.join('img', 'more3.png'),
+            os.path.join('img', 'more4.png'),
+            os.path.join('img', 'more5.png')]
+    more_connect = [os.path.join('img', 'more_connect.png'),]
+    ## Add note
+    add_note = [os.path.join('img', 'add_note.png'),]
+    send = [os.path.join('img', 'send.png'),]
+
+
+    found_connect = False
+    ## Flow 1: there is the main connect button
+    img_connect = find_img_in_screen(connect_image_main, confidence)
+    if not img_connect:
+        img_more = find_img_in_screen(more, confidence)
+        if img_more:
+            pyautogui.click(img_more.x, img_more.y)
+            time.sleep(3)
+            img_connect = find_img_in_screen(more_connect, confidence)
+
+    if not img_connect:
+        return "Couldn't find connect"
+
+
+    pyautogui.click(img_connect.x, img_connect.y)  # click on connect
     time.sleep(3)
-    image_location = pyautogui.locateOnScreen(click_send_msg[0], confidence=0.85)
-    if image_location:
-        print("Found add a note")
-        image_center = pyautogui.center(image_location)
-        pyautogui.click(image_center.x, image_center.y)
+    ## Send message
+    img_add_note = find_img_in_screen(add_note, confidence)
 
-        time.sleep(3)
-        pyautogui.typewrite(msg)
-        time.sleep(2)
+    if not img_add_note:
+        return "Couldn't find add note"
 
-        image_location = pyautogui.locateOnScreen(click_send_msg[1], confidence=0.85)
-        if image_location:
-            image_center = pyautogui.center(image_location)
-            pyautogui.click(image_center.x, image_center.y)
-            return "success"
-        else:
-            return "Couldn't find send:" + click_send_msg[1]
-    else:
-        return "Couldn't find add a note"
-    return "failed"
+    pyautogui.click(img_add_note.x, img_add_note.y)  # click on add_note
+    time.sleep(3)
+    pyautogui.typewrite(msg)
+    time.sleep(3)
+
+    img_send = find_img_in_screen(send, confidence)
+    if not img_send:
+        return "Couldn't find img_send"
+    if is_dry_run:
+        return "Success dry run"
+
+    pyautogui.click(img_send.x, img_send.y)  # click on connect
+    return "success"
 
 
 if __name__ == '__main__':
