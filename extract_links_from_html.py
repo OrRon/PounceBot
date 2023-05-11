@@ -8,8 +8,18 @@ import configparser
 import time
 import pyautogui
 import json
+import requests
+import time
 import random
 
+LOG_PATH = ''
+COOKIES_FILE = 'cookies.json'
+HEADERS_FILE = 'headers.json'
+
+def load_data_from_file(file_name):
+    with open(file_name, 'r') as file:
+        data = json.load(file)
+    return data
 
 LOG_PATH = ''
 CONFIDENCE = 0.85
@@ -36,12 +46,18 @@ def move(duration):
     print("Moving to ({},{})".format(x,y))
     pyautogui.moveTo(x,y, duration=duration)
 
+
+
+
 def write_to_log(l):
     with open(LOG_PATH, 'a') as log_file:
         log_file.write(json.dumps(l, indent=4) + '\n')
         log_file.close()
     print(l, LOG_PATH)
 
+
+def random_seconds():
+    return random.randint(15, 45)
 
 def transform_linkedin_link(link):
     base_link = 'https://www.linkedin.com/in/'
@@ -78,9 +94,10 @@ def parse_html(html):
 def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive, is_dry_run):
     idx = 0
     for linkedin_profile_url, linkedin_profile_name in entries.items():
-        name = linkedin_profile_name.split(' ')[0]
         msg = messages[idx % len(messages)]
         idx = idx + 1
+        id = linkedin_profile_url.split('/in/')[1]
+        name = linkedin_profile_name.split(' ')[0]
         message_to_send = msg % (name)
         print(message_to_send)
         cmd = browser_cmd % linkedin_profile_url
@@ -90,6 +107,11 @@ def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive, 
         write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
         if is_interactive:
             input("<Enter> to proceed")
+        build_and_send_request(id,message_to_send)
+        random_time = random_seconds()
+        print(f"Going to sleep for {random_time} seconds...")
+        time.sleep(random_seconds())
+        print(f"Woke up after {random_time} seconds!")
 
 
 def read_messages(config):
@@ -103,6 +125,29 @@ def read_messages(config):
             pass
     return messages
 
+
+def build_and_send_request(id,msg):
+    cookies = load_data_from_file(COOKIES_FILE)
+    headers = load_data_from_file(HEADERS_FILE)
+
+    params = {
+        'action': 'verifyQuotaAndCreate',
+        'decorationId': 'com.linkedin.voyager.dash.deco.relationships.InvitationCreationResultWithInvitee-2',
+    }
+
+    json_data = {
+        'inviteeProfileUrn': 'urn:li:fsd_profile:' + id,
+        'customMessage': msg,
+    }
+    response = requests.post(
+        'https://www.linkedin.com/voyager/api/voyagerRelationshipsDashMemberRelationships',
+        params=params,
+        cookies=cookies,
+        headers=headers,
+        json=json_data,
+    )
+    print(response.status_code, response.reason, response.text)
+
 def main():
     if platform.system() == "Windows":
         cmd = '''"C:\Program Files\Google\Chrome\Application\chrome.exe" %s'''
@@ -115,6 +160,7 @@ def main():
     parser.add_argument("--src", help="html file path", type=str, required=True)
     parser.add_argument("-i", help="wait for user input between profiles", action='store_true', default=False)
     parser.add_argument("-d", help="Is dry run", action='store_true', default=False)
+    parser.add_argument("--network", help="network to use", action='store_true', default=False)
     args = parser.parse_args()
 
     config = configparser.ConfigParser()

@@ -1,3 +1,6 @@
 log.txt
 logs/
 reachouts/
+cookie.json
+headers.json
+config.ini
