@@ -14,7 +14,7 @@ LOG_PATH = ''
 
 def write_to_log(l):
     with open(LOG_PATH, 'a') as log_file:
-        log_file.write(json.dumps(l, indent = 4) + '\n')
+        log_file.write(json.dumps(l, indent=4) + '\n')
         log_file.close()
     print(l, LOG_PATH)
 
@@ -28,6 +28,7 @@ def transform_linkedin_link(link):
         return base_link + lead_id
     else:
         return link
+
 
 def parse_html(html):
     # Parse the HTML with BeautifulSoup
@@ -50,7 +51,7 @@ def parse_html(html):
     return link_dict
 
 
-def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive):
+def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive, is_dry_run):
     idx = 0
     for linkedin_profile_url, linkedin_profile_name in entries.items():
         name = linkedin_profile_name.split(' ')[0]
@@ -58,18 +59,18 @@ def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive):
         idx = idx + 1
         message_to_send = msg % (name)
         print(message_to_send)
-        pyperclip.copy(message_to_send)
         cmd = browser_cmd % linkedin_profile_url
         os.system(cmd)
         time.sleep(7)
-        result = send_request_gui(message_to_send)
-        write_to_log({'profile': linkedin_profile_url,  'message': message_to_send, 'result' : result})
+        result = send_request_gui(message_to_send, is_dry_run)
+        write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
         if is_interactive:
             input("<Enter> to proceed")
 
+
 def read_messages(config):
     messages = []
-    for i in range(1,10):
+    for i in range(1, 10):
         try:
             msg = config['general']['msg' + str(i)]
             msg = msg.replace('<br>', '\n')
@@ -88,11 +89,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--src", help="html file path", type=str, required=True)
     parser.add_argument("-i", help="wait for user input between profiles", action='store_true', default=False)
+    parser.add_argument("-d", help="Is dry run", action='store_true', default=False)
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
     config.read('config.ini')
-    
+
     messages = read_messages(config)
 
     global LOG_PATH
@@ -104,10 +106,10 @@ def main():
         html = file.read()
         entries = parse_html(html)
         print(f'{len(entries)} entries loaded')
-        open_browser_for_each_entry(cmd, messages, entries, args.i)
+        open_browser_for_each_entry(cmd, messages, entries, args.i, args.d)
 
 
-def send_request_gui(msg):
+def send_request_gui(msg, is_dry_run):
     click_order_connect1 = [os.path.join('img', 'more.png'),
                             os.path.join('img', 'more2.png'),
                             os.path.join('img', 'more3.png'),
@@ -116,13 +118,13 @@ def send_request_gui(msg):
                             os.path.join('img', 'more_connect.png')]
     click_order_connect2 = [os.path.join('img', 'connect_main.png')]
 
-    click_send_msg = [os.path.join('img','add_note.png'), os.path.join('img','send.png')]
+    click_send_msg = [os.path.join('img', 'add_note.png'), os.path.join('img', 'send.png')]
 
     print(msg)
 
     ## Connect
 
-    image_location = pyautogui.locateOnScreen(click_order_connect2[0])
+    image_location = pyautogui.locateOnScreen(click_order_connect2[0], confidence=0.85)
     if image_location:
         image_center = pyautogui.center(image_location)
         pyautogui.click(image_center.x, image_center.y)
@@ -140,7 +142,7 @@ def send_request_gui(msg):
             image_center = pyautogui.center(image_location)
             pyautogui.click(image_center.x, image_center.y)
             time.sleep(0.5)
-            image_location = pyautogui.locateOnScreen(click_order_connect1[-1])
+            image_location = pyautogui.locateOnScreen(click_order_connect1[-1], confidence=0.85)
             if image_location:
                 image_center = pyautogui.center(image_location)
                 pyautogui.click(image_center.x, image_center.y)
@@ -150,10 +152,13 @@ def send_request_gui(msg):
             return "unable to find more button"
     ## Send a message if required
 
-
+    if is_dry_run:
+        print("is dry run")
+        return
     print("Attempting to send a message")
+
     time.sleep(3)
-    image_location = pyautogui.locateOnScreen(click_send_msg[0])
+    image_location = pyautogui.locateOnScreen(click_send_msg[0], confidence=0.85)
     if image_location:
         print("Found add a note")
         image_center = pyautogui.center(image_location)
@@ -163,7 +168,7 @@ def send_request_gui(msg):
         pyautogui.typewrite(msg)
         time.sleep(2)
 
-        image_location = pyautogui.locateOnScreen(click_send_msg[1])
+        image_location = pyautogui.locateOnScreen(click_send_msg[1], confidence=0.85)
         if image_location:
             image_center = pyautogui.center(image_location)
             pyautogui.click(image_center.x, image_center.y)
@@ -173,6 +178,7 @@ def send_request_gui(msg):
     else:
         return "Couldn't find add a note"
     return "failed"
+
 
 if __name__ == '__main__':
     main()
