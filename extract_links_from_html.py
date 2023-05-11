@@ -78,7 +78,7 @@ def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive, 
         print(message_to_send)
         cmd = browser_cmd % linkedin_profile_url
         os.system(cmd)
-        time.sleep(7)
+        wait_random()
         result = send_request_gui(message_to_send, is_dry_run, CONFIDENCE)
         write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
         if is_interactive:
@@ -170,7 +170,7 @@ def send_request_gui(msg, is_dry_run, confidence):
         img_more = find_img_in_screen(more, confidence)
         if img_more:
             pyautogui.click(img_more.x, img_more.y)
-            time.sleep(3)
+            wait_random()
             img_connect = find_img_in_screen(more_connect, confidence)
 
     if not img_connect:
