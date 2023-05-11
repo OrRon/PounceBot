@@ -107,11 +107,7 @@ def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive, 
         write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
         if is_interactive:
             input("<Enter> to proceed")
-        build_and_send_request(id,message_to_send)
-        random_time = random_seconds()
-        print(f"Going to sleep for {random_time} seconds...")
-        time.sleep(random_seconds())
-        print(f"Woke up after {random_time} seconds!")
+        #build_and_send_request(id,message_to_send)
 
 
 def read_messages(config):
