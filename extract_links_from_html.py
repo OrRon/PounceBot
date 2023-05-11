@@ -207,7 +207,8 @@ def send_request_gui(msg, is_dry_run, confidence):
             os.path.join('img', 'more2.png'),
             os.path.join('img', 'more3.png'),
             os.path.join('img', 'more4.png'),
-            os.path.join('img', 'more5.png')]
+            os.path.join('img', 'more5.png'),
+            os.path.join('img', 'more_mac1.png'),]
     more_connect = [os.path.join('img', 'more_connect.png'),]
     ## Add note
     add_note = [os.path.join('img', 'add_note.png'),]
