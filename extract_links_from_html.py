@@ -8,11 +8,26 @@ import configparser
 import time
 import pyautogui
 import json
+import random
 
 
 LOG_PATH = ''
 CONFIDENCE = 0.85
+SLEEP_START = 3
+SLEEP_END = 12
+MOUSE_MOVE_DURATION = 0.25
 
+screen_width , screen_height = pyautogui.size()
+
+def get_next_pos(): ## Make sure not to hover over the buttons
+    x = random.randint(0, screen_width - 1)
+    y = random.randint(screen_height - 100, screen_height - 1)
+    return x , y
+
+def move(duration):
+    x,y = get_next_pos()
+    print("Moving to ({},{})".format(x,y))
+    pyautogui.moveTo(x,y, duration=duration)
 
 def write_to_log(l):
     with open(LOG_PATH, 'a') as log_file:
@@ -103,6 +118,10 @@ def main():
     LOG_PATH = config['general']['log_path']
     global CONFIDENCE
     CONFIDENCE = float(config['general']['confidence'])
+    global SLEEP_START
+    SLEEP_START = int(config['general']['sleep_start'])
+    global SLEEP_END
+    SLEEP_END = int(config['general']['sleep_start'])
 
     print(f'src = [{args.src}]\nchrome_cmd = [{cmd}]\nmessages = [{messages}]')
     entries = {}
@@ -111,6 +130,13 @@ def main():
         entries = parse_html(html)
         print(f'{len(entries)} entries loaded')
         open_browser_for_each_entry(cmd, messages, entries, args.i, args.d)
+
+
+def wait_random():
+    sleep_time = random.randint(SLEEP_START, SLEEP_END)
+    print(f"Sleeping {sleep_time} secs")
+    for i in range(int(sleep_time / MOUSE_MOVE_DURATION)):
+        move(MOUSE_MOVE_DURATION)
 
 def find_img_in_screen(imgs, confidence):
     for i in imgs:
@@ -152,7 +178,7 @@ def send_request_gui(msg, is_dry_run, confidence):
 
 
     pyautogui.click(img_connect.x, img_connect.y)  # click on connect
-    time.sleep(3)
+    wait_random()
     ## Send message
     img_add_note = find_img_in_screen(add_note, confidence)
 
