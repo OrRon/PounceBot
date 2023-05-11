@@ -200,7 +200,9 @@ def find_img_in_screen(imgs, confidence):
 
 def send_request_gui(msg, is_dry_run, confidence):
     ## Connect main
-    connect_image_main = [os.path.join('img', 'connect_main.png'), os.path.join('img', 'connect_main2.png')]
+    connect_image_main = [os.path.join('img', 'connect_main.png'), 
+                          os.path.join('img', 'connect_main2.png'),
+                          os.path.join('img', 'connect_main_mac.png'),]
 
     ## More + more_connect
     more = [os.path.join('img', 'more.png'),
@@ -209,10 +211,15 @@ def send_request_gui(msg, is_dry_run, confidence):
             os.path.join('img', 'more4.png'),
             os.path.join('img', 'more5.png'),
             os.path.join('img', 'more_mac1.png'),]
-    more_connect = [os.path.join('img', 'more_connect.png'),]
+    more_connect = [os.path.join('img', 'more_connect.png'),
+                    os.path.join('img', 'more_connet_mac.png')
+                    ,]
     ## Add note
-    add_note = [os.path.join('img', 'add_note.png'),]
-    send = [os.path.join('img', 'send.png'),]
+    add_note = [os.path.join('img', 'add_note.png'),
+                os.path.join('img', 'add_note_mac.png'),
+                ]
+    send = [os.path.join('img', 'send.png'),
+            os.path.join('img', 'send_mac.png'),]
 
 
     found_connect = False
