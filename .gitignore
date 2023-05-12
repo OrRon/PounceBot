@@ -5,3 +5,4 @@ cookie.json
 headers.json
 config.ini
 .DS_Store
+tmp/
