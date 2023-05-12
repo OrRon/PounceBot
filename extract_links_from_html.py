@@ -70,7 +70,7 @@ def transform_linkedin_link(link):
         return link
 
 
-def parse_html(html, index):
+def parse_html(html, start, end):
     # Parse the HTML with BeautifulSoup
     soup = BeautifulSoup(html, 'html.parser')
 
@@ -81,7 +81,7 @@ def parse_html(html, index):
     link_dict = {}
 
     # Loop over each <a> tag and add its link and value to the dictionary
-    for a in a_tags[index:]:
+    for a in a_tags[start:end]:
         link = transform_linkedin_link(a['href'])
         value = a.text.strip()
         print(link)
@@ -157,7 +157,8 @@ def main():
     parser.add_argument("-i", help="wait for user input between profiles", action='store_true', default=False)
     parser.add_argument("-d", help="Is dry run", action='store_true', default=False)
     parser.add_argument("--network", help="network to use", action='store_true', default=False)
-    parser.add_argument("--index", help="index to start from", type=int, default=0)
+    parser.add_argument("--start", help="index to start from", type=int, default=0)
+    parser.add_argument("--end", help="index to stop at", type=int, default=-1)
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
@@ -179,7 +180,7 @@ def main():
     entries = {}
     with open(args.src, 'r', encoding='utf8') as file:
         html = file.read()
-        entries = parse_html(html, args.index)
+        entries = parse_html(html, args.start, args.end)
         print(f'{len(entries)} entries loaded')
         open_browser_for_each_entry(cmd, messages, entries, args.i, args.d)
 
