@@ -88,6 +88,7 @@ def parse_html(html, start, end):
         if link not in link_dict.keys():
             link_dict[link] = value
 
+    print(f"Amount of entries: {len(link_dict)}")
     return link_dict
 
 
