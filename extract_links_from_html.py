@@ -77,6 +77,14 @@ def parse_html(html, start, end):
     # Find all <a> tags that match the specified format
     a_tags = soup.find_all('a', href=re.compile(r"https://www\.linkedin\.com/(?!.*company)"))
 
+    profiles_ordered = []
+    for a in a_tags:
+        link = transform_linkedin_link(a['href'])
+        if link not in profiles_ordered:
+            profiles_ordered.append(link)
+
+    profiles_ordered = profiles_ordered[start:end] # Get the profiles we want
+
     # Create a dictionary to store links and their corresponding values
     link_dict = {}
 
@@ -85,7 +93,7 @@ def parse_html(html, start, end):
         link = transform_linkedin_link(a['href'])
         value = a.text.strip()
         print(link)
-        if link not in link_dict.keys():
+        if link in profiles_ordered and link not in link_dict.keys():
             link_dict[link] = value
 
     print(f"Amount of entries: {len(link_dict)}")
