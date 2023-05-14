@@ -1,7 +1,7 @@
 log.txt
 logs/
 reachouts/
-cookie.json
+cookies.json
 headers.json
 config.ini
 .DS_Store

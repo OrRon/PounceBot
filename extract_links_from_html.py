@@ -92,7 +92,14 @@ def parse_html(html, start, end):
     return link_dict
 
 
-def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive, is_dry_run):
+def send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url):
+    os.system(cmd)
+    wait_random()
+    result = send_request_gui(message_to_send, is_dry_run, CONFIDENCE)
+    write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
+
+
+def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive, is_dry_run, is_network_run):
     idx = 0
     for linkedin_profile_url, linkedin_profile_name in entries.items():
         msg = messages[idx % len(messages)]
@@ -102,13 +109,15 @@ def open_browser_for_each_entry(browser_cmd, messages, entries, is_interactive, 
         message_to_send = msg % (name)
         print(message_to_send)
         cmd = browser_cmd % linkedin_profile_url
-        os.system(cmd)
-        wait_random()
-        result = send_request_gui(message_to_send, is_dry_run, CONFIDENCE)
-        write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
+
+        if is_network_run:
+            build_and_send_request(id,message_to_send)
+            print(f"Sent request to {linkedin_profile_url}")
+        else:
+            send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url)
+       
         if is_interactive:
             input("<Enter> to proceed")
-        #build_and_send_request(id,message_to_send)
 
 
 def read_messages(config):
@@ -144,6 +153,9 @@ def build_and_send_request(id,msg):
         json=json_data,
     )
     print(response.status_code, response.reason, response.text)
+    wait_time = random.randint(15, 45)  # Generate a random integer between 15 and 45
+    print(f"Waiting {wait_time} seconds")
+    time.sleep(wait_time)
 
 def main():
     if platform.system() == "Windows":
@@ -183,7 +195,7 @@ def main():
         html = file.read()
         entries = parse_html(html, args.start, args.end)
         print(f'{len(entries)} entries loaded')
-        open_browser_for_each_entry(cmd, messages, entries, args.i, args.d)
+        send_by_method_for_each_entry(cmd, messages, entries, args.i, args.d, args.network)
 
 
 def wait_random():
