@@ -43,7 +43,6 @@ def get_next_pos(): ## Make sure not to hover over the buttons
 
 def move(duration):
     x,y = get_next_pos()
-    print("Moving to ({},{})".format(x,y))
     pyautogui.moveTo(x,y, duration=duration)
 
 
@@ -53,7 +52,6 @@ def write_to_log(l):
     with open(LOG_PATH, 'a') as log_file:
         log_file.write(json.dumps(l, indent=4) + '\n')
         log_file.close()
-    print(l, LOG_PATH)
 
 
 def random_seconds():
@@ -166,6 +164,23 @@ def build_and_send_request(id,msg):
     print(f"Waiting {wait_time} seconds")
     time.sleep(wait_time)
 
+
+def print_state(args, config, entries, cmd):
+    print(f"HTML file: {args.src}")
+    print(f"Start index: {args.start}")
+    print(f"End index: {args.end}")
+    print(f"Is interactive: {args.i}")
+    print(f"Is dry run: {args.d}")
+    print(f"Is network run: {args.network}")
+    print(f"Amount of profiles: {len(entries)}")
+    print(f"Messages: {read_messages(config)}")
+    print(f"Browser command: {cmd}")
+    print(f"Log file: {LOG_PATH}")
+    print(f"Confidence: {CONFIDENCE}")
+    print(f"Coordinates factor: {COORDINATE_FACTOR}")
+    print(f"Entries count: {len(entries)}")
+    return    
+
 def main():
     if platform.system() == "Windows":
         cmd = '''"C:\Program Files\Google\Chrome\Application\chrome.exe" %s'''
@@ -181,6 +196,7 @@ def main():
     parser.add_argument("--network", help="network to use", action='store_true', default=False)
     parser.add_argument("--start", help="index to start from", type=int, default=0)
     parser.add_argument("--end", help="index to stop at", type=int, default=-1)
+    parser.add_argument("--show-state", help="network to use", action='store_true', default=False)
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
@@ -198,12 +214,14 @@ def main():
     global SLEEP_END
     SLEEP_END = int(config['general']['sleep_start'])
 
-    print(f'src = [{args.src}]\nchrome_cmd = [{cmd}]\nmessages = [{messages}]')
     entries = {}
     with open(args.src, 'r', encoding='utf8') as file:
         html = file.read()
         entries = parse_html(html, args.start, args.end)
         print(f'{len(entries)} entries loaded')
+        print_state(args, config, entries, cmd)
+        if input("Continue? [y/n]") != 'y':
+            return
         send_by_method_for_each_entry(cmd, messages, entries, args.i, args.d, args.network)
 
 
