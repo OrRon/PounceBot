@@ -84,12 +84,13 @@ def parse_html(html, start, end):
             profiles_ordered.append(link)
 
     profiles_ordered = profiles_ordered[start:end] # Get the profiles we want
+    print(f"Amount of profiles: {len(profiles_ordered)}")
 
     # Create a dictionary to store links and their corresponding values
     link_dict = {}
 
     # Loop over each <a> tag and add its link and value to the dictionary
-    for a in a_tags[start:end]:
+    for a in a_tags:
         link = transform_linkedin_link(a['href'])
         value = a.text.strip()
         print(link)
