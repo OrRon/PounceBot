@@ -37,8 +37,8 @@ class Point():
         self.y = y
 
 def get_next_pos(): ## Make sure not to hover over the buttons
-    x = random.randint(0, screen_width - 1)
-    y = random.randint(screen_height - 100, screen_height - 1)
+    x = random.randint(10, screen_width - 10)
+    y = random.randint(screen_height - 100, screen_height - 10)
     return x , y
 
 def move(duration):
