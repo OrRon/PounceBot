@@ -189,6 +189,8 @@ def print_state(args, config, entries, cmd):
     print(f"Coordinates factor: {COORDINATE_FACTOR}")
     print(f"Entries count: {len(entries)}")
     print(f"NamesDB: {NAMES_DB}")
+    print(f"Sleep start: {SLEEP_START}")
+    print(f"Sleep end: {SLEEP_END}")
     return    
 
 def main():
