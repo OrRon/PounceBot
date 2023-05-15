@@ -49,7 +49,7 @@ def move(duration):
 
 
 def write_to_log(l):
-    with open(LOG_PATH, 'a') as log_file:
+    with open(LOG_PATH, 'a+') as log_file:
         log_file.write(json.dumps(l, indent=4) + '\n')
         log_file.close()
 
