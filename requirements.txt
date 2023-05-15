@@ -3,3 +3,5 @@ pyperclip
 pyautogui
 opencv-python
 requests
+click
+colorama

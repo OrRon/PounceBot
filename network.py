@@ -32,7 +32,8 @@ def build_and_send_request(id,msg):
         headers=headers,
         json=json_data,
     )
-    print(response.status_code, response.reason, response.text)
+    
     wait_time = random.randint(15, 45)  # Generate a random integer between 15 and 45
-    print(f"Waiting {wait_time} seconds")
+    print(f"\r\nWaiting {wait_time} seconds")
     time.sleep(wait_time)
+    return response.status_code

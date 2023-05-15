@@ -10,6 +10,8 @@ import pyautogui
 import json
 import time
 import random
+import click, sys
+
 
 from network import build_and_send_request
 
@@ -100,23 +102,35 @@ def send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url):
 
 def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive, is_dry_run, is_network_run):
     idx = 0
-    for linkedin_profile_url, linkedin_profile_name in entries.items():
-        msg = messages[idx % len(messages)]
-        idx = idx + 1
-        id = linkedin_profile_url.split('/in/')[1]
-        name = linkedin_profile_name.split(' ')[0]
-        message_to_send = msg % (name)
-        print(message_to_send)
-        cmd = browser_cmd % linkedin_profile_url
+    
+    with click.progressbar(range(len(entries.items())), show_pos=True, width=70) as bar:
+        for linkedin_profile_url, linkedin_profile_name in entries.items():
+            click.clear()
+            bar.update(1)
+            click.echo("\r\n")
+            msg = messages[idx % len(messages)]
+            idx = idx + 1
+            id = linkedin_profile_url.split('/in/')[1]
+            name = linkedin_profile_name.split(' ')[0]
+            message_to_send = msg % (name)
+            click.secho("[Message]", bold=True, fg='green')
+            click.secho(message_to_send)
+            cmd = browser_cmd % linkedin_profile_url
+            if is_network_run:
+                click.secho("[URL]", bold=True, fg='green')
+                click.secho(linkedin_profile_url)
+                
+                ret_code = build_and_send_request(id,message_to_send)
+                if ret_code != 200:
+                    click.secho(f"Error, return code:{ret_code}", fg='red')
+                    return
+            else:
+                send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url)
+        
+            if is_interactive:
+                input("<Enter> to proceed")
+            
 
-        if is_network_run:
-            build_and_send_request(id,message_to_send)
-            print(f"Sent request to {linkedin_profile_url}")
-        else:
-            send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url)
-       
-        if is_interactive:
-            input("<Enter> to proceed")
 
 
 def read_messages(config):
