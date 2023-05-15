@@ -69,8 +69,9 @@ def transform_linkedin_username(a_text, link):
     print(f"name: {name}")
     
     if link in NAMES_DB:
-        print(f"using name from db: {NAMES_DB.get(link)}")
-        return NAMES_DB.get(link)[0] # Use the name from the database if it exists
+        name = NAMES_DB.get(link)[0]
+        print(f"using name from db: {name}")
+        return name # Use the name from the database if it exists
     name = input("Enter name: ")
     NAMES_DB.add(link, (name, a_text))
     print("Added to database.: [{link}, {name}]")
