@@ -1,6 +1,6 @@
 import os
 from bs4 import BeautifulSoup
-import re
+import regex as re
 import pyperclip
 import argparse
 import platform
@@ -12,6 +12,8 @@ import time
 import random
 import click, sys
 
+from names_db import NamesDB
+
 
 from network import build_and_send_request
 
@@ -21,6 +23,7 @@ SLEEP_START = 3
 SLEEP_END = 12
 MOUSE_MOVE_DURATION = 0.25
 COORDINATE_FACTOR = 2
+NAMES_DB = None
 
 screen_width , screen_height = pyautogui.size()
 
@@ -50,6 +53,31 @@ def write_to_log(l):
 
 def random_seconds():
     return random.randint(15, 45)
+
+def contains_only_letters(word):
+    pattern = r'^\p{L}+$'
+    return re.match(pattern, word, re.UNICODE) is not None
+
+def transform_linkedin_username(a_text, link):
+    striped = a_text.strip()
+    name = striped.split(' ')[0]
+    if contains_only_letters(name):
+        return name
+    
+    print(f"a_text: {a_text}")
+    print(f"striped: {striped}")
+    print(f"name: {name}")
+    
+    if link in NAMES_DB:
+        print(f"using name from db: {NAMES_DB.get(link)}")
+        return NAMES_DB.get(link)[0] # Use the name from the database if it exists
+    name = input("Enter name: ")
+    NAMES_DB.add(link, (name, a_text))
+    print("Added to database.: [{link}, {name}]")
+    return name
+
+
+
 
 def transform_linkedin_link(link):
     base_link = 'https://www.linkedin.com/in/'
@@ -84,9 +112,9 @@ def parse_html(html, start, end):
     # Loop over each <a> tag and add its link and value to the dictionary
     for a in a_tags:
         link = transform_linkedin_link(a['href'])
-        value = a.text.strip()
         print(link)
         if link in profiles_ordered and link not in link_dict.keys():
+            value = transform_linkedin_username(a.text, link)
             link_dict[link] = value
 
     print(f"Amount of entries: {len(link_dict)}")
@@ -111,7 +139,7 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
             msg = messages[idx % len(messages)]
             idx = idx + 1
             id = linkedin_profile_url.split('/in/')[1]
-            name = linkedin_profile_name.split(' ')[0]
+            name = linkedin_profile_name
             message_to_send = msg % (name)
             click.secho("[Message]", bold=True, fg='green')
             click.secho(message_to_send)
@@ -159,6 +187,7 @@ def print_state(args, config, entries, cmd):
     print(f"Confidence: {CONFIDENCE}")
     print(f"Coordinates factor: {COORDINATE_FACTOR}")
     print(f"Entries count: {len(entries)}")
+    print(f"NamesDB: {NAMES_DB}")
     return    
 
 def main():
@@ -192,6 +221,8 @@ def main():
     SLEEP_START = int(config['general']['sleep_start'])
     global SLEEP_END
     SLEEP_END = int(config['general']['sleep_start'])
+    global NAMES_DB
+    NAMES_DB = NamesDB(config['general']['names_db'])
 
     entries = {}
     with open(args.src, 'r', encoding='utf8') as file:
