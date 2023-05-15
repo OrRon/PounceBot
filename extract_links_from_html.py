@@ -55,7 +55,7 @@ def random_seconds():
     return random.randint(15, 45)
 
 def contains_only_letters(word):
-    pattern = r'^\p{L}+$'
+    pattern = r'^\p{L}{3,}$'
     return re.match(pattern, word, re.UNICODE) is not None
 
 def transform_linkedin_username(a_text, link):
