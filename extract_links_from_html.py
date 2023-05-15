@@ -221,7 +221,7 @@ def main():
     global SLEEP_START
     SLEEP_START = int(config['general']['sleep_start'])
     global SLEEP_END
-    SLEEP_END = int(config['general']['sleep_start'])
+    SLEEP_END = int(config['general']['sleep_end'])
     global NAMES_DB
     NAMES_DB = NamesDB(config['general']['names_db'])
 
