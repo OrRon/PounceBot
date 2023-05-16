@@ -21,6 +21,10 @@ class NamesDB:
     def __getitem__(self, item):
          return self._dict[item]
     
+    def __setitem__(self, key, value):
+            self._dict[key] = value
+            self.write_dictionary()
+    
     def read_dictionary(self):
         try:
             with open(self.file_path, 'rb+') as file:
@@ -37,23 +41,14 @@ class NamesDB:
     
 
 class Entry():
-    def __init__(self, linkedin_id, name, a_tag, status, date_updated):
-        self.linkedin_id = linkedin_id
+    def __init__(self, name, a_tag):
         self.name = name
         self.a_tag = a_tag
-        self.status = status
-        self.date_updated = date_updated
     
     def __repr__(self):
-        return f"linkedin_id = {self.linkedin_id}\n" + \
-            f"name = {self.name}\n" + \
-            f"a_tag = {self.a_tag}\n" + \
-            f"status = {self.status}\n" + \
-            f"date_updated = {self.date_updated}\n"
+        return f"name = {self.name}\n" + \
+            f"a_tag = {self.a_tag}\n"
     
     def __str__(self):
-        return f"linkedin_id = {self.linkedin_id}\n" + \
-            f"name = {self.name}\n" + \
-            f"a_tag = {self.a_tag}\n" + \
-            f"status = {self.status}\n" + \
-            f"date_updated = {self.date_updated}\n"
+        return f"name = {self.name}\n" + \
+            f"a_tag = {self.a_tag}\n" 
