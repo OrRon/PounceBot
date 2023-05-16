@@ -46,7 +46,7 @@ def move(duration):
 
 def write_to_log(l):
     with open(LOG_PATH, 'a+') as log_file:
-        log_file.write(json.dumps(l, indent=4) + '\n')
+        log_file.write(json.dumps(l, indent=4) + ',\n')
         log_file.close()
 
 
@@ -159,6 +159,24 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
                 input("<Enter> to proceed")
             
 
+def load_from_log(json_log):
+    ## start by de-duping, there might be a case a profile appears twice, and one of them was successful
+    json_dict = {}
+    for entry in json_log:    
+        link = entry['profile']
+        value = entry['message'].split(' ')[1][:-1] # Get the first name from the message, remove comma
+        if link in json_dict and json_dict[link][2] != 'success':
+            json_dict[link] = (link, value, entry['result'])
+        elif link not in json_dict:
+            json_dict[link] = (link, value, entry['result'])
+
+    
+    link_dict = {}
+    for entry in json_dict.values():
+        print(entry)
+        if entry[2] != 'success':    
+            link_dict[entry[0]] = entry[1]
+    return link_dict    
 
 
 def read_messages(config):
@@ -187,6 +205,7 @@ def print_state(args, config, entries, cmd):
     print(f"Confidence: {CONFIDENCE}")
     print(f"Coordinates factor: {COORDINATE_FACTOR}")
     print(f"Entries count: {len(entries)}")
+    print(f"Entries: {entries}")
     print(f"NamesDB: {NAMES_DB}")
     print(f"Sleep start: {SLEEP_START}")
     print(f"Sleep end: {SLEEP_END}")
@@ -201,7 +220,7 @@ def main():
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--src", help="html file path", type=str, required=True)
+    parser.add_argument("--src", help="html file path or log", type=str, required=True)
     parser.add_argument("-i", help="wait for user input between profiles", action='store_true', default=False)
     parser.add_argument("-d", help="Is dry run", action='store_true', default=False)
     parser.add_argument("--network", help="network to use", action='store_true', default=False)
@@ -229,7 +248,17 @@ def main():
     entries = {}
     with open(args.src, 'r', encoding='utf8') as file:
         html = file.read()
-        entries = parse_html(html, args.start, args.end)
+        file.close()
+        entries = None
+        try:
+            entries = load_from_log(json.loads(html))
+        except Exception as e:
+            print(f"Error parsing json: {e}")
+            print("If you are trying to load the log, can you verify it is valid JSON?")
+            print("You probably need to remove a ']' from the middle of the file and add it and the end")
+            print("Trying to parse as html")
+            entries = parse_html(html, args.start, args.end)
+        
         print(f'{len(entries)} entries loaded')
         print_state(args, config, entries, cmd)
         if input("Continue? [y/n]") != 'y':
