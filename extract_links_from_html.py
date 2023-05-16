@@ -55,7 +55,12 @@ def random_seconds():
 
 def contains_only_letters(word):
     pattern = r'^\p{L}{3,}$'
-    return re.match(pattern, word, re.UNICODE) is not None
+    if re.match(pattern, word, re.UNICODE) is None:
+        return False
+    if re.match(r'^[A-Z]+$', word):
+        return False
+    return True
+    
 
 def transform_linkedin_username(a_text, link):
     striped = a_text.strip()
