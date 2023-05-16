@@ -1,6 +1,7 @@
 import os
 from bs4 import BeautifulSoup
 import regex as re
+import pyperclip
 import argparse
 import platform
 import configparser
@@ -9,9 +10,7 @@ import pyautogui
 import json
 import time
 import random
-import click
-
-
+import click, sys
 
 from names_db import NamesDB, Entry
 
@@ -24,7 +23,7 @@ SLEEP_START = 3
 SLEEP_END = 12
 MOUSE_MOVE_DURATION = 0.25
 COORDINATE_FACTOR = 2
-DB = None
+NAMES_DB = None
 
 screen_width , screen_height = pyautogui.size()
 
@@ -69,13 +68,13 @@ def transform_linkedin_username(a_text, link):
     print(f"striped: {striped}")
     print(f"name: {name}")
     
-    if link in DB and DB[link].name != None:
-        name = DB[link].name
+    if link in NAMES_DB:
+        name = NAMES_DB[link][0]
         print(f"using name from db: {name}")
         return name # Use the name from the database if it exists
     name = input("Enter name: ")
-    DB[link] = Entry(name, a_text)
-    print("Added to database.: [{link}, {entry}]")
+    NAMES_DB[link] = (name, a_text)
+    print("Added to database.: [{link}, {name}]")
     return name
 
 
@@ -146,17 +145,16 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
             click.secho("[Message]", bold=True, fg='green')
             click.secho(message_to_send)
             cmd = browser_cmd % linkedin_profile_url
-            result = None
             if is_network_run:
                 click.secho("[URL]", bold=True, fg='green')
                 click.secho(linkedin_profile_url)
                 
-                result = build_and_send_request(id,message_to_send)
-                if result != 200:
-                    click.secho(f"Error, return code:{result}", fg='red')
+                ret_code = build_and_send_request(id,message_to_send)
+                if ret_code != 200:
+                    click.secho(f"Error, return code:{ret_code}", fg='red')
                     return
             else:
-                result = send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url)
+                send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url)
         
             if is_interactive:
                 input("<Enter> to proceed")
@@ -190,7 +188,7 @@ def print_state(args, config, entries, cmd):
     print(f"Confidence: {CONFIDENCE}")
     print(f"Coordinates factor: {COORDINATE_FACTOR}")
     print(f"Entries count: {len(entries)}")
-    print(f"NamesDB: {DB}")
+    print(f"NamesDB: {NAMES_DB}")
     print(f"Sleep start: {SLEEP_START}")
     print(f"Sleep end: {SLEEP_END}")
     return    
@@ -226,8 +224,8 @@ def main():
     SLEEP_START = int(config['general']['sleep_start'])
     global SLEEP_END
     SLEEP_END = int(config['general']['sleep_end'])
-    global DB
-    DB = NamesDB(config['general']['names_db'])
+    global NAMES_DB
+    NAMES_DB = NamesDB(config['general']['names_db'])
 
     entries = {}
     with open(args.src, 'r', encoding='utf8') as file:
