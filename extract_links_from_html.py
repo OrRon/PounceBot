@@ -1,7 +1,6 @@
 import os
 from bs4 import BeautifulSoup
 import regex as re
-import pyperclip
 import argparse
 import platform
 import configparser
@@ -10,9 +9,9 @@ import pyautogui
 import json
 import time
 import random
-import click, sys
+import click
 
-from names_db import NamesDB, Entry
+from names_db import NamesDB
 
 
 from network import build_and_send_request
