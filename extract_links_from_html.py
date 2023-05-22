@@ -179,7 +179,7 @@ def load_from_log(json_log):
     link_dict = {}
     for entry in json_dict.values():
         print(entry)
-        if entry[2] != 'success':    
+        if entry[2] != 'success' and "verified email constraint" not in entry[2]:    
             link_dict[entry[0]] = entry[1]
     return link_dict    
 
