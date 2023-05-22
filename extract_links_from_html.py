@@ -197,7 +197,22 @@ def read_messages(config):
 
 
 def print_state(args, config, entries, cmd):
-    print(f"HTML file: {args.src}")
+    print('''
+    
+  _________            .__        __      _________ __          __          
+ /   _____/ ___________|__|______/  |_   /   _____//  |______ _/  |_  ____  
+ \_____  \_/ ___\_  __ \  \____ \   __\  \_____  \\   __\__  \\   __\/ __ \ 
+ /        \  \___|  | \/  |  |_> >  |    /        \|  |  / __ \|  | \  ___/ 
+/_______  /\___  >__|  |__|   __/|__|   /_______  /|__| (____  /__|  \___  >
+        \/     \/         |__|                  \/           \/          \/ 
+
+    ''')
+    
+    print(f"Entries: {entries}")
+    print(f"NamesDB: {NAMES_DB}")
+    print("------------------------------------------")
+    print(f"Entries count: {len(entries)}")
+    print(f"Source file: {args.src}") 
     print(f"Start index: {args.start}")
     print(f"End index: {args.end}")
     print(f"Is interactive: {args.i}")
@@ -209,9 +224,7 @@ def print_state(args, config, entries, cmd):
     print(f"Log file: {LOG_PATH}")
     print(f"Confidence: {CONFIDENCE}")
     print(f"Coordinates factor: {COORDINATE_FACTOR}")
-    print(f"Entries count: {len(entries)}")
-    print(f"Entries: {entries}")
-    print(f"NamesDB: {NAMES_DB}")
+    
     print(f"Sleep start: {SLEEP_START}")
     print(f"Sleep end: {SLEEP_END}")
     return    
