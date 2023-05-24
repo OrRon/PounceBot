@@ -12,6 +12,7 @@ import random
 import click
 
 from names_db import NamesDB
+from GoogleSheetClient import GoogleSheetClient
 
 
 from network import build_and_send_request
@@ -164,6 +165,19 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
                 input("<Enter> to proceed")
             
 
+def update_db_from_log(json_log, gsheet_client):
+    for e in json_log:
+        profile = e['profile']
+        name = e['message'].split(' ')[1][:-1]
+        result = e['result']
+        if profile in NAMES_DB:
+            name = NAMES_DB[profile][0]
+        entry = {'profile': profile,
+                                'reachout_name': name,
+                                'message': e['message'],
+                                'result': result}
+        gsheet_client.add_or_update_missing_entries(entry)
+
 def load_from_log(json_log):
     ## start by de-duping, there might be a case a profile appears twice, and one of them was successful
     json_dict = {}
@@ -244,6 +258,7 @@ def main():
     parser.add_argument("--network", help="network to use", action='store_true', default=False)
     parser.add_argument("--start", help="index to start from", type=int, default=0)
     parser.add_argument("--end", help="index to stop at", type=int, default=-1)
+    parser.add_argument("--update-db", help="load log to db", action='store_true', default=False)
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
@@ -269,12 +284,21 @@ def main():
         file.close()
         entries = None
         try:
+            if args.update_db:
+                google_client = GoogleSheetClient(config['general']['google_key_path'],
+                                                  'reachout_script_db',
+                                                  'main',
+                                                  config['general']['name'])
+                update_db_from_log(json.loads(html), google_client)
+                return
             entries = load_from_log(json.loads(html))
         except Exception as e:
             print(f"Error parsing json: {e}")
             print("If you are trying to load the log, can you verify it is valid JSON?")
             print("You probably need to remove a ']' from the middle of the file and add it and the end")
             print("Trying to parse as html")
+            if args.update_db:
+                raise Exception("Can't update db from html")
             entries = parse_html(html, args.start, args.end)
         
         print(f'{len(entries)} entries loaded')
