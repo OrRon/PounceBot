@@ -133,7 +133,7 @@ def send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url):
     write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
 
 
-def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive, is_dry_run, is_network_run):
+def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive, is_dry_run, is_network_run, is_just_log):
     idx = 0
     
     with click.progressbar(range(len(entries.items())), show_pos=True, width=70) as bar:
@@ -157,6 +157,8 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
                 if ret_code != 200:
                     click.secho(f"Error, return code:{ret_code}", fg='red')
                     return
+            elif is_just_log:
+                write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': 'unknown'})
             else:
                 send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url)
         
@@ -242,6 +244,7 @@ def main():
     parser.add_argument("-i", help="wait for user input between profiles", action='store_true', default=False)
     parser.add_argument("-d", help="Is dry run", action='store_true', default=False)
     parser.add_argument("--network", help="network to use", action='store_true', default=False)
+    parser.add_argument("--just-log", help="just log, dont sent anything", action='store_true', default=False)
     parser.add_argument("--start", help="index to start from", type=int, default=0)
     parser.add_argument("--end", help="index to stop at", type=int, default=-1)
     args = parser.parse_args()
@@ -281,7 +284,7 @@ def main():
         print_state(args, config, entries, cmd)
         if input("Continue? [y/n]") != 'y':
             return
-        send_by_method_for_each_entry(cmd, messages, entries, args.i, args.d, args.network)
+        send_by_method_for_each_entry(cmd, messages, entries, args.i, args.d, args.network, args.just_log)
 
 
 def wait_random():
