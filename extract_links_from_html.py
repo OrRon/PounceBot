@@ -238,7 +238,7 @@ def main():
         COORDINATE_FACTOR = 1
     elif platform.system() == 'Linux':
         COORDINATE_FACTOR = 1
-        cmd = 'google-chrome %s'
+        cmd = 'google-chrome %s &'
     else:
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
