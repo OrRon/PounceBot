@@ -236,6 +236,9 @@ def main():
         cmd = '''"C:\Program Files\Google\Chrome\Application\chrome.exe" %s'''
         global COORDINATE_FACTOR
         COORDINATE_FACTOR = 1
+    elif platform.system() == 'Linux':
+        COORDINATE_FACTOR = 1
+        cmd = 'google-chrome %s'
     else:
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
@@ -306,6 +309,7 @@ def send_request_gui(msg, is_dry_run, confidence):
     ## Connect main
     connect_image_main = [os.path.join('img', 'connect_main.png'), 
                           os.path.join('img', 'connect_main2.png'),
+                          os.path.join('img', 'connect_main3.png'),
                           os.path.join('img', 'connect_main_mac.png'),]
 
     ## More + more_connect
@@ -314,15 +318,21 @@ def send_request_gui(msg, is_dry_run, confidence):
             os.path.join('img', 'more3.png'),
             os.path.join('img', 'more4.png'),
             os.path.join('img', 'more5.png'),
+            os.path.join('img', 'more6.png'),
+            os.path.join('img', 'more7.png'),
+            os.path.join('img', 'more8.png'),
             os.path.join('img', 'more_mac1.png'),]
     more_connect = [os.path.join('img', 'more_connect.png'),
+                    os.path.join('img', 'more_connect2.png'),
                     os.path.join('img', 'more_connet_mac.png')
                     ,]
     ## Add note
     add_note = [os.path.join('img', 'add_note.png'),
+                os.path.join('img', 'add_note2.png'),
                 os.path.join('img', 'add_note_mac.png'),
                 ]
     send = [os.path.join('img', 'send.png'),
+            os.path.join('img', 'send2.png'),
             os.path.join('img', 'send_mac.png'),]
 
 
