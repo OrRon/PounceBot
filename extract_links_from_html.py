@@ -13,7 +13,7 @@ import click
 import csv
 
 from names_db import NamesDB
-
+from GoogleSheetClient import GoogleSheetClient
 
 from network import build_and_send_request
 
@@ -24,6 +24,7 @@ SLEEP_END = 12
 MOUSE_MOVE_DURATION = 0.25
 COORDINATE_FACTOR = 2
 NAMES_DB = None
+SHEET_CLIENT = None
 
 screen_width , screen_height = pyautogui.size()
 
@@ -49,6 +50,7 @@ def write_to_log(l):
     with open(LOG_PATH, 'a+') as log_file:
         log_file.write(json.dumps(l, indent=4) + ',\n')
         log_file.close()
+    SHEET_CLIENT.add_or_update_missing_entries(l)
 
 
 def random_seconds():
@@ -127,11 +129,11 @@ def parse_html(html, start, end):
     return link_dict
 
 
-def send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url):
+def send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url, reachout_name):
     os.system(cmd)
     wait_random()
     result = send_request_gui(message_to_send, is_dry_run, CONFIDENCE)
-    write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result})
+    write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result, 'reachout_name' : reachout_name})
 
 
 def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive, is_dry_run, is_network_run, is_just_log):
@@ -159,9 +161,9 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
                     click.secho(f"Error, return code:{ret_code}", fg='red')
                     return
             elif is_just_log:
-                write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': 'unknown'})
+                write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': 'success', 'reachout_name': name})
             else:
-                send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url)
+                send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url, name)
         
             if is_interactive:
                 input("<Enter> to proceed")
@@ -172,7 +174,7 @@ def load_from_csv(data, start, end, current_user):
     filtered_list = []
     for entry in data:
         reached_out_by = json.loads(entry['reached_out_by'])
-        was_successful = entry['was_successful'].lower() == 'true'
+        was_successful = entry['was_successful'] == '1'
         if not was_successful and current_user not in reached_out_by:
             filtered_list.append(entry)
 
@@ -291,6 +293,8 @@ def main():
     SLEEP_END = int(config['general']['sleep_end'])
     global NAMES_DB
     NAMES_DB = NamesDB(config['general']['names_db'])
+    global SHEET_CLIENT
+    SHEET_CLIENT = GoogleSheetClient(config['general']['path_to_credentials'],'reachout_script_db','main',config['general']['name'])
 
     entries = {}
     with open(args.src, 'r', encoding='utf8') as file:
