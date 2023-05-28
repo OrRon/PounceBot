@@ -10,6 +10,7 @@ import json
 import time
 import random
 import click
+import csv
 
 from names_db import NamesDB
 
@@ -166,6 +167,27 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
                 input("<Enter> to proceed")
             
 
+def load_from_csv(data, start, end, current_user):
+    # Start by gathering all of the profiles which the current user didn't reach out to.
+    filtered_list = []
+    for entry in data:
+        reached_out_by = json.loads(entry['reached_out_by'])
+        was_successful = entry['was_successful'].lower() == 'true'
+        if not was_successful and current_user not in reached_out_by:
+            filtered_list.append(entry)
+
+    print(f"Amount of profiles: {len(filtered_list)}")
+    result = {}
+    for entry in filtered_list[start: end]:
+        link = entry['linkedin_profile_link']
+        result[link] = entry['reachout_name']
+
+    return result
+    
+
+    
+
+
 def load_from_log(json_log):
     ## start by de-duping, there might be a case a profile appears twice, and one of them was successful
     json_dict = {}
@@ -210,7 +232,6 @@ def print_state(args, config, entries, cmd):
 
     ''')
     
-    print(f"Entries: {entries}")
     print(f"NamesDB: {NAMES_DB}")
     print("------------------------------------------")
     print(f"Entries count: {len(entries)}")
@@ -229,7 +250,7 @@ def print_state(args, config, entries, cmd):
     
     print(f"Sleep start: {SLEEP_START}")
     print(f"Sleep end: {SLEEP_END}")
-    return    
+    return
 
 def main():
     if platform.system() == "Windows":
@@ -242,8 +263,10 @@ def main():
     else:
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
+    src_type = ['csv', 'log', 'html']
     parser = argparse.ArgumentParser()
     parser.add_argument("--src", help="html file path or log", type=str, required=True)
+    parser.add_argument("--src-type", help="source file type, choose from"  + str(src_type) ,choices = src_type, required=True)
     parser.add_argument("-i", help="wait for user input between profiles", action='store_true', default=False)
     parser.add_argument("-d", help="Is dry run", action='store_true', default=False)
     parser.add_argument("--network", help="network to use", action='store_true', default=False)
@@ -271,17 +294,23 @@ def main():
 
     entries = {}
     with open(args.src, 'r', encoding='utf8') as file:
-        html = file.read()
-        file.close()
+        
         entries = None
-        try:
-            entries = load_from_log(json.loads(html))
-        except Exception as e:
-            print(f"Error parsing json: {e}")
-            print("If you are trying to load the log, can you verify it is valid JSON?")
-            print("You probably need to remove a ']' from the middle of the file and add it and the end")
-            print("Trying to parse as html")
+        if args.src_type == 'html':
+            html = file.read()
             entries = parse_html(html, args.start, args.end)
+        elif args.src_type == 'log':
+            try:
+                json = file.read()
+                entries = load_from_log(json.loads(html))
+            except Exception as e:
+                print(f"Error parsing json: {e}")
+                print("If you are trying to load the log, can you verify it is valid JSON?")
+                print("You probably need to remove a ']' from the middle of the file and add it and the end")
+        elif args.src_type == 'csv':
+            entries = load_from_csv(csv.DictReader(file), args.start, args.end, config['general']['name'])
+
+        file.close()
         
         print(f'{len(entries)} entries loaded')
         print_state(args, config, entries, cmd)
