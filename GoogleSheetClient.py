@@ -17,7 +17,7 @@ class GoogleSheetClient:
         self.sheet = self.client.open(sheet_name).worksheet(inner_sheet_name)
         self.owner_name = owner_name
 
-
+    
     def add_or_update_missing_entries(self, entry):
         print(entry)
         if (entry['result'] != 'success' and entry['result'] != 'blocked'):

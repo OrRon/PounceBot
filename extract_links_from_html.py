@@ -167,7 +167,16 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
         
             if is_interactive:
                 input("<Enter> to proceed")
-            
+
+def load_from_sheet(sheet_name, path_to_credentials, start, end, current_user):
+    sheet_c = GoogleSheetClient(path_to_credentials,'reachout_script_db',sheet_name,current_user)
+    entries = sheet_c.sheet.get_all_records()
+    result = {}
+    for entry in entries[start: end]:
+        link = entry['linkedin_profile_link']
+        result[link] = entry['reachout_name']
+
+    return result
 
 def load_from_csv(data, start, end, current_user):
     # Start by gathering all of the profiles which the current user didn't reach out to.
@@ -265,7 +274,7 @@ def main():
     else:
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
-    src_type = ['csv', 'log', 'html']
+    src_type = ['csv', 'log', 'html', 'sheet']
     parser = argparse.ArgumentParser()
     parser.add_argument("--src", help="html file path or log", type=str, required=True)
     parser.add_argument("--src-type", help="source file type, choose from"  + str(src_type) ,choices = src_type, required=True)
@@ -297,30 +306,36 @@ def main():
     SHEET_CLIENT = GoogleSheetClient(config['general']['path_to_credentials'],'reachout_script_db','main',config['general']['name'])
 
     entries = {}
-    with open(args.src, 'r', encoding='utf8') as file:
-        
-        entries = None
-        if args.src_type == 'html':
-            html = file.read()
-            entries = parse_html(html, args.start, args.end)
-        elif args.src_type == 'log':
-            try:
-                json = file.read()
-                entries = load_from_log(json.loads(html))
-            except Exception as e:
-                print(f"Error parsing json: {e}")
-                print("If you are trying to load the log, can you verify it is valid JSON?")
-                print("You probably need to remove a ']' from the middle of the file and add it and the end")
-        elif args.src_type == 'csv':
-            entries = load_from_csv(csv.DictReader(file), args.start, args.end, config['general']['name'])
 
+    if args.src_type == 'html':
+        file = open(args.src, 'r', encoding='utf8')
+        html = file.read()
         file.close()
-        
-        print(f'{len(entries)} entries loaded')
-        print_state(args, config, entries, cmd)
-        if input("Continue? [y/n]") != 'y':
-            return
-        send_by_method_for_each_entry(cmd, messages, entries, args.i, args.d, args.network, args.just_log)
+        entries = parse_html(html, args.start, args.end)
+    elif args.src_type == 'log':
+        try:
+            file = open(args.src, 'r', encoding='utf8')
+            json = file.read()
+            file.close()
+            entries = load_from_log(json.loads(html))
+        except Exception as e:
+            print(f"Error parsing json: {e}")
+            print("If you are trying to load the log, can you verify it is valid JSON?")
+            print("You probably need to remove a ']' from the middle of the file and add it and the end")
+    elif args.src_type == 'csv':
+        file = open(args.src, 'r', encoding='utf8')
+        entries = load_from_csv(csv.DictReader(file), args.start, args.end, config['general']['name'])
+        file.close()
+    elif args.src_type == 'sheet':
+        entries = load_from_sheet(args.src, config['general']['path_to_credentials'],args.start, args.end, config['general']['name'])
+
+    
+    
+    print(f'{len(entries)} entries loaded')
+    print_state(args, config, entries, cmd)
+    if input("Continue? [y/n]") != 'y':
+        return
+    send_by_method_for_each_entry(cmd, messages, entries, args.i, args.d, args.network, args.just_log)
 
 
 def wait_random():
