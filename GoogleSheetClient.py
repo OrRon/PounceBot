@@ -1,6 +1,6 @@
 
 import gspread
-import time
+import datetime
 import json
 from google.oauth2.service_account import Credentials
 SCOPES = ['https://www.googleapis.com/auth/drive',
@@ -20,6 +20,8 @@ class GoogleSheetClient:
 
     def add_or_update_missing_entries(self, entry):
         print(entry)
+        if (entry['result'] != 'success' and entry['result'] != 'blocked'):
+            return
         key = entry['profile']
         cell = self.sheet.find(key)
         if not cell: # if the key is not found
@@ -38,6 +40,21 @@ class GoogleSheetClient:
                                     reachout_name,
                                     activity_log,
                                     reached_out_by])
+        else: # if the key is found
+            row = self.sheet.row_values(cell.row)
+            print('row type: ', type(row))
+            merged_activity_log = json.dumps(json.loads(row[3]) + [{
+                            'result':entry['result'],
+                            'type':'linked_in_connect_request',
+                            'reachout_by': self.owner_name,
+                            'ts':str(datetime.datetime.now()),  
+                            'message':entry['message']}])
+            row[3] = merged_activity_log
+            reached_out_by = json.loads(row[4])
+            merged_reached_out_by = json.dumps(list(set(reached_out_by + [self.owner_name])))
+            row[4] = merged_reached_out_by
+            print(row)
+            self.sheet.update(f"A{cell.row}:ZZ{cell.row}", [row])
 
 def main():
     pass
