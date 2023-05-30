@@ -25,6 +25,7 @@ MOUSE_MOVE_DURATION = 0.25
 COORDINATE_FACTOR = 2
 NAMES_DB = None
 SHEET_CLIENT = None
+SCREEN_CAPTURE_REGION = None
 
 screen_width , screen_height = pyautogui.size()
 
@@ -261,6 +262,7 @@ def print_state(args, config, entries, cmd):
     
     print(f"Sleep start: {SLEEP_START}")
     print(f"Sleep end: {SLEEP_END}")
+    print(f"Screen capture region: {SCREEN_CAPTURE_REGION}")
     return
 
 def main():
@@ -304,7 +306,11 @@ def main():
     NAMES_DB = NamesDB(config['general']['names_db'])
     global SHEET_CLIENT
     SHEET_CLIENT = GoogleSheetClient(config['general']['path_to_credentials'],'reachout_script_db','main',config['general']['name'])
-
+    
+    if 'screen_capture_region' in config['general']:
+        global SCREEN_CAPTURE_REGION
+        side_len = int(config['general']['screen_capture_region'])
+        SCREEN_CAPTURE_REGION = (0,0,side_len // COORDINATE_FACTOR,side_len // COORDINATE_FACTOR)
     entries = {}
 
     if args.src_type == 'html':
@@ -346,7 +352,12 @@ def wait_random():
 
 def find_img_in_screen(imgs, confidence):
     for i in imgs:
-        image_location = pyautogui.locateOnScreen(i, confidence=confidence)
+        image_location = None
+        if SCREEN_CAPTURE_REGION:
+            image_location = pyautogui.locateOnScreen(i, confidence=confidence, region = SCREEN_CAPTURE_REGION)
+        else:
+            image_location = pyautogui.locateOnScreen(i, confidence=confidence)
+
         if image_location:
             image_center = pyautogui.center(image_location)
             return Point(image_center.x / COORDINATE_FACTOR, image_center.y / COORDINATE_FACTOR)
