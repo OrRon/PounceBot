@@ -358,6 +358,7 @@ def send_request_gui(msg, is_dry_run, confidence):
     connect_image_main = [os.path.join('img', 'connect_main.png'), 
                           os.path.join('img', 'connect_main2.png'),
                           os.path.join('img', 'connect_main3.png'),
+                          os.path.join('img', 'connect_main4.png'),
                           os.path.join('img', 'connect_main_mac.png'),]
 
     ## More + more_connect
