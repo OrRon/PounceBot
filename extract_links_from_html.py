@@ -11,6 +11,7 @@ import time
 import random
 import click
 import csv
+import pyperclip
 
 from names_db import NamesDB
 from GoogleSheetClient import GoogleSheetClient
@@ -233,6 +234,13 @@ def read_messages(config):
     return messages
 
 
+def type(text: str):    
+    pyperclip.copy(text)
+    if platform.system() == "Darwin":
+        pyautogui.hotkey("command", "v")
+    else:
+        pyautogui.hotkey("ctrl", "v")
+
 def print_state(args, config, entries, cmd):
     print('''
     
@@ -426,7 +434,7 @@ def send_request_gui(msg, is_dry_run, confidence):
 
     pyautogui.click(img_add_note.x, img_add_note.y)  # click on add_note
     time.sleep(3)
-    pyautogui.typewrite(msg, interval = TYPE_INTERVAL)
+    type(msg)
     time.sleep(3)
 
     img_send = find_img_in_screen(send, confidence)
