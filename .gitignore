@@ -8,3 +8,4 @@ config.ini
 name_db.pkl
 tmp/
 .vscode
+__pycache__
