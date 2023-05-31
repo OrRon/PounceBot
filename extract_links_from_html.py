@@ -393,6 +393,8 @@ def send_request_gui(msg, is_dry_run, confidence):
     ## Add note
     add_note = [os.path.join('img', 'add_note.png'),
                 os.path.join('img', 'add_note2.png'),
+                os.path.join('img', 'add_note3.png'),
+                os.path.join('img', 'add_note4.png'),
                 os.path.join('img', 'add_note_mac.png'),
                 ]
     send = [os.path.join('img', 'send.png'),

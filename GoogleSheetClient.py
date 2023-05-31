@@ -19,7 +19,6 @@ class GoogleSheetClient:
 
     
     def add_or_update_missing_entries(self, entry):
-        print(entry)
         if (entry['result'] != 'success' and entry['result'] != 'blocked'):
             return
         key = entry['profile']
