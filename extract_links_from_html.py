@@ -26,6 +26,7 @@ COORDINATE_FACTOR = 2
 NAMES_DB = None
 SHEET_CLIENT = None
 SCREEN_CAPTURE_REGION = None
+TYPE_INTERVAL = 0.1
 
 screen_width , screen_height = pyautogui.size()
 
@@ -311,6 +312,9 @@ def main():
         global SCREEN_CAPTURE_REGION
         side_len = int(config['general']['screen_capture_region'])
         SCREEN_CAPTURE_REGION = (0,0,side_len // COORDINATE_FACTOR,side_len // COORDINATE_FACTOR)
+    
+    global TYPE_INTERVAL
+    TYPE_INTERVAL = float(config['general']['type_interval'])
     entries = {}
 
     if args.src_type == 'html':
@@ -420,14 +424,14 @@ def send_request_gui(msg, is_dry_run, confidence):
 
     pyautogui.click(img_add_note.x, img_add_note.y)  # click on add_note
     time.sleep(3)
-    pyautogui.typewrite(msg)
+    pyautogui.typewrite(msg, interval = TYPE_INTERVAL)
     time.sleep(3)
 
     img_send = find_img_in_screen(send, confidence)
     if not img_send:
         return "Couldn't find img_send"
     if is_dry_run:
-        return "Success dry run"
+        return "success-dry-run"
 
     pyautogui.click(img_send.x, img_send.y)  # click on connect
     return "success"
