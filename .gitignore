@@ -7,3 +7,4 @@ config.ini
 .DS_Store
 name_db.pkl
 tmp/
+.vscode
