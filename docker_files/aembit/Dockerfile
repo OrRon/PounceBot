@@ -11,4 +11,7 @@ RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/h
 RUN apt-get update
 RUN apt-get install helm
 RUN helm repo add aembit https://helm.aembit.io
+RUN mkdir aembit
+RUN cd aembit
+RUN helm pull aembit/aembit
 ENTRYPOINT /bin/bash
