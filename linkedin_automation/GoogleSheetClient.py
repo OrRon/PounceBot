@@ -24,6 +24,8 @@ class GoogleSheetClient:
         key = entry['profile']
         cell = self.sheet.find(key)
         if not cell: # if the key is not found
+            role = json.dumps(['unknown']) if 'role' not in entry else entry['role']
+            had_meeting = '0'
             profile = entry['profile']
             full_name = ''
             reachout_name = entry['reachout_name']
@@ -33,12 +35,14 @@ class GoogleSheetClient:
                             'reachout_by': self.owner_name,
                             'ts':'',
                             'message':entry['message']}])
-            reached_out_by = self.owner_name
+            reached_out_by = json.dumps([self.owner_name])
             self.sheet.append_row([profile,
                                     full_name,
                                     reachout_name,
                                     activity_log,
-                                    reached_out_by])
+                                    reached_out_by,
+                                    had_meeting,
+                                    role])
         else: # if the key is found
             row = self.sheet.row_values(cell.row)
             print('row type: ', type(row))
@@ -52,6 +56,8 @@ class GoogleSheetClient:
             reached_out_by = json.loads(row[4])
             merged_reached_out_by = json.dumps(list(set(reached_out_by + [self.owner_name])))
             row[4] = merged_reached_out_by
+            if 'role' in entry:
+                row[6] = entry['role']
             print(row)
             self.sheet.update(f"A{cell.row}:ZZ{cell.row}", [row])
 
