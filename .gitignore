@@ -9,3 +9,4 @@ name_db.pkl
 tmp/
 .vscode
 __pycache__
+meetings.csv
