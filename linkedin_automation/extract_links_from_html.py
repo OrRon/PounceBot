@@ -294,7 +294,7 @@ def main():
     parser.add_argument("--network", help="network to use", action='store_true', default=False)
     parser.add_argument("--just-log", help="just log, dont sent anything", action='store_true', default=False)
     parser.add_argument("--start", help="index to start from", type=int, default=0)
-    parser.add_argument("--end", help="index to stop at", type=int, default=-1)
+    parser.add_argument("--end", help="index to stop at", type=int, default=None)
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
