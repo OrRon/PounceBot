@@ -398,6 +398,10 @@ def send_request_gui(msg, is_dry_run, confidence):
                     os.path.join('img', 'more_connect2.png'),
                     os.path.join('img', 'more_connet_mac.png')
                     ,]
+
+    ## Blocked
+    blocked = [os.path.join('img', 'blocked.png'),]
+
     ## Add note
     add_note = [os.path.join('img', 'add_note.png'),
                 os.path.join('img', 'add_note2.png'),
@@ -426,6 +430,13 @@ def send_request_gui(msg, is_dry_run, confidence):
 
     pyautogui.click(img_connect.x, img_connect.y)  # click on connect
     wait_random()
+
+    ## Check if blocked
+
+    img_blocked = find_img_in_screen(blocked, confidence)
+    if img_blocked:
+        return "blocked"
+
     ## Send message
     img_add_note = find_img_in_screen(add_note, confidence)
 

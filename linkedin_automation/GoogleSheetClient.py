@@ -25,6 +25,7 @@ class GoogleSheetClient:
         cell = self.sheet.find(key)
         if not cell: # if the key is not found
             role = json.dumps(['unknown']) if 'role' not in entry else entry['role']
+            email = ''
             had_meeting = '0'
             profile = entry['profile']
             full_name = ''
@@ -42,7 +43,8 @@ class GoogleSheetClient:
                                     activity_log,
                                     reached_out_by,
                                     had_meeting,
-                                    role])
+                                    role,
+                                    email])
         else: # if the key is found
             row = self.sheet.row_values(cell.row)
             print('row type: ', type(row))
