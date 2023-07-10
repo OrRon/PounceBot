@@ -19,7 +19,7 @@ class GoogleSheetClient:
 
     
     def add_or_update_missing_entries(self, entry):
-        if (entry['result'] != 'success' and entry['result'] != 'blocked'):
+        if (entry['result'] != 'success' and entry['result'] != 'blocked' and entry['result'] != 'pending'):
             return
         key = entry['profile']
         cell = self.sheet.find(key)

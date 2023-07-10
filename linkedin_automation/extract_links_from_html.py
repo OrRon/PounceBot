@@ -398,6 +398,9 @@ def send_request_gui(msg, is_dry_run, confidence):
                     os.path.join('img', 'more_connect2.png'),
                     os.path.join('img', 'more_connet_mac.png')
                     ,]
+    more_pending = [os.path.join('img', 'more_pending.png'),
+                    ]
+
 
     ## Blocked
     blocked = [os.path.join('img', 'blocked.png'),]
@@ -422,6 +425,9 @@ def send_request_gui(msg, is_dry_run, confidence):
         if img_more:
             pyautogui.click(img_more.x, img_more.y)
             wait_random()
+            img_more_pending = find_img_in_screen(more_pending, confidence)
+            if img_more_pending:
+                return "pending"
             img_connect = find_img_in_screen(more_connect, confidence)
 
     if not img_connect:
