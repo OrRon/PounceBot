@@ -386,6 +386,9 @@ def send_request_gui(msg, is_dry_run, confidence):
                           os.path.join('img', 'connect_main4.png'),
                           os.path.join('img', 'connect_main_mac.png'),]
 
+    main_pending = [os.path.join('img', 'main_pending.png'), 
+                          ]
+
     ## More + more_connect
     more = [os.path.join('img', 'more.png'),
             os.path.join('img', 'more2.png'),
@@ -418,6 +421,10 @@ def send_request_gui(msg, is_dry_run, confidence):
             os.path.join('img', 'send2.png'),
             os.path.join('img', 'send_mac.png'),]
 
+
+    img_pending = find_img_in_screen(main_pending, confidence)
+    if img_pending:
+        return "pending"
 
     found_connect = False
     ## Flow 1: there is the main connect button
