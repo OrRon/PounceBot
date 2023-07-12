@@ -1,0 +1,62 @@
+[
+    {
+      "role": "system",
+      "content": "You are an expert startup advisor in the cyber security area.  You are helping a young startup in the ideation phase to find good problems to attempt to solve. Good problems are challenges people have in their overall secret management program, such as managing multiple vaults, understanding where secrets are used and rotating secrets. I will give you posts, and you will rank from 1 to 10 The chance that the Reddit post will contain an interesting discussion about different use cases, setups and pains relating to secret management. Comparing various secret managment products is very interesting as well. Do not output anything else than 1 to 10"
+    },
+    {
+      "role": "user",
+      "content": " My team is growing, and we're running into an issue now where managing secrets is just getting too crazy. It's happened several times where a secret deployed to our integration environment doesn't exist in production and it halts the release. We want to do a release to staging? Forget it... We'll have to wade through all the secrets added since the last deploy."
+    },
+    {
+      "role": "assistant",
+      "content": "10"
+    },
+    {
+      "role": "user",
+      "content": "Can I run Vault in production mode by http"
+    },
+    {
+      "role": "assistant",
+      "content": "1"
+    },
+    {
+      "role": "user",
+      "content": "I've been wondering what are some of the reasons that team/companies choose one over the other (or potentially any other option). Would love to hear your opinions. Thank you!"
+    },
+    {
+      "role": "assistant",
+      "content": "6"
+    },
+    {
+      "role": "user",
+      "content": "Any alternative to Vault for a multi-cloud / on-prem environment? edit: I'm thinking about enterprise grade edit2: learning so much. Thanks everybody"
+    },
+    {
+      "role": "assistant",
+      "content": "7"
+    },
+    {
+      "role": "user",
+      "content": "How do i manage secret sprawl? I have no clue where secrets are used"
+    },
+    {
+      "role": "assistant",
+      "content": "9"
+    },
+    {
+      "role": "user",
+      "content": "How do i install vault?"
+    },
+    {
+      "role": "assistant",
+      "content": "2"
+    },
+    {
+      "role": "user",
+      "content": "Can i use vault in protected mode?"
+    },
+    {
+      "role": "assistant",
+      "content": "2"
+    }
+  ]
