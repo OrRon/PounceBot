@@ -16,9 +16,26 @@ class GoogleSheetClient:
         self.client = gspread.authorize(credentials)
         self.sheet = self.client.open(sheet_name).worksheet(inner_sheet_name)
         self.owner_name = owner_name
+        self.buffered_entries = []
+        self.buffer_size = 50
+
+
+    def flush(self):
+        print(f"Flush, len {len(self.buffered_entries)}")
+        self.sheet.append_rows(self.buffered_entries)
+        self.buffered_entries = []
+        print(f"After Flush, len {len(self.buffered_entries)}")
+    
+    def delete_row(self, key):
+        cell = self.sheet.find(key)
+        if cell:
+            self.sheet.delete_row(cell.row)
+            return True
+        return False
+        
 
     
-    def add_or_update_missing_entries(self, entry):
+    def add_or_update_missing_entries(self, entry, flush=True):
         if (entry['result'] != 'success' and entry['result'] != 'blocked' and entry['result'] != 'pending'):
             return
         key = entry['profile']
@@ -37,14 +54,17 @@ class GoogleSheetClient:
                             'ts':'',
                             'message':entry['message']}])
             reached_out_by = json.dumps([self.owner_name])
-            self.sheet.append_row([profile,
-                                    full_name,
-                                    reachout_name,
-                                    activity_log,
-                                    reached_out_by,
-                                    had_meeting,
-                                    role,
-                                    email])
+            row = [profile,
+                    full_name,
+                    reachout_name,
+                    activity_log,
+                    reached_out_by,
+                    had_meeting,
+                    role,
+                    email]
+            self.buffered_entries.append(row)
+            if flush or len(self.buffered_entries) >= self.buffer_size:
+                self.flush()
         else: # if the key is found
             row = self.sheet.row_values(cell.row)
             print('row type: ', type(row))
@@ -62,6 +82,7 @@ class GoogleSheetClient:
                 row[6] = entry['role']
             print(row)
             self.sheet.update(f"A{cell.row}:ZZ{cell.row}", [row])
+    
 
 def main():
     pass
