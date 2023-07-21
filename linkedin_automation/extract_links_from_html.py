@@ -151,9 +151,12 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
             idx = idx + 1
             id = linkedin_profile_url.split('/in/')[1]
             name = linkedin_profile_name
-            message_to_send = msg % (name)
-            click.secho("[Message]", bold=True, fg='green')
-            click.secho(message_to_send)
+            if msg != "none":
+                message_to_send = msg % (name)
+                click.secho("[Message]", bold=True, fg='green')
+                click.secho(message_to_send)
+            else:
+                message_to_send = None
             cmd = browser_cmd % linkedin_profile_url
             if is_network_run:
                 click.secho("[URL]", bold=True, fg='green')
@@ -445,23 +448,23 @@ def send_request_gui(msg, is_dry_run, confidence):
 
     pyautogui.click(img_connect.x, img_connect.y)  # click on connect
     wait_random()
-
     ## Check if blocked
 
     img_blocked = find_img_in_screen(blocked, confidence)
     if img_blocked:
         return "blocked"
 
-    ## Send message
-    img_add_note = find_img_in_screen(add_note, confidence)
+    if msg:
+        ## Send message
+        img_add_note = find_img_in_screen(add_note, confidence)
 
-    if not img_add_note:
-        return "Couldn't find add note"
+        if not img_add_note:
+            return "Couldn't find add note"
 
-    pyautogui.click(img_add_note.x, img_add_note.y)  # click on add_note
-    time.sleep(3)
-    type(msg)
-    time.sleep(3)
+        pyautogui.click(img_add_note.x, img_add_note.y)  # click on add_note
+        time.sleep(3)
+        type(msg)
+        time.sleep(3)
 
     img_send = find_img_in_screen(send, confidence)
     if not img_send:
