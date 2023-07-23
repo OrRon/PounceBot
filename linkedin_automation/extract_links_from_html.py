@@ -191,6 +191,9 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
 
 
 def update_db_for_connection(id, entry):
+    if not SHEET_CLIENT.reached_out_by_current_user(entry):
+        click.secho('Skipped, not reached out by current user')
+        return
     connection_state = get_connection_state(id)
     SHEET_CLIENT.update_row_state(entry, connection_state)
 
