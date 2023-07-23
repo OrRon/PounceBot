@@ -28,9 +28,9 @@ class LogToCSVConvertor:
         
 
     def add_or_update_missing_entries(self, entry):
-        key = entry['profile']
+        key = entry['linkedin_profile_link']
         if key not in self.db: # if the key is not found
-            profile = entry['profile']
+            profile = entry['linkedin_profile_link']
             full_name = ''
             reachout_name = entry['reachout_name']
             activity_log = json.dumps([{
