@@ -162,21 +162,12 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
             cmd = browser_cmd % p['linkedin_profile_link']
             if mode == 'network':
                 click.secho("[URL]", bold=True, fg='green')
-<<<<<<< HEAD
                 click.secho(linkedin_profile_url)
                 
                 ret_code = build_and_send_request(id,message_to_send)
                 if (ret_code != 200) and (ret_code != 406):
                     write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': "Error, return code:{ret_code}", 'reachout_name' : name})
-=======
-                click.secho(p['linkedin_profile_link'])
-
-                ret_code = build_and_send_request(id, message_to_send)
-                if ret_code != 200:
-                    write_to_log({'message': message_to_send,
-                                 'result': "Error, return code:{ret_code}"}, p)
->>>>>>> 7f25318031c2a13430be73cf41d1f84a84b7d359
-                    click.secho(f"Error, return code:{ret_code}", fg='red')
+                   click.secho(f"Error, return code:{ret_code}", fg='red')
                     return
                 write_to_log(
                     {'message': message_to_send, 'result': 'success'}, p)
