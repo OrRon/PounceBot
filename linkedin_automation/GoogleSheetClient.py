@@ -38,13 +38,13 @@ class GoogleSheetClient:
     def add_or_update_missing_entries(self, entry, flush=True):
         if (entry['result'] != 'success' and entry['result'] != 'blocked' and entry['result'] != 'pending'):
             return
-        key = entry['profile']
+        key = entry['linkedin_profile_link']
         cell = self.sheet.find(key)
         if not cell: # if the key is not found
             role = json.dumps(['unknown']) if 'role' not in entry else entry['role']
             email = ''
             had_meeting = '0'
-            profile = entry['profile']
+            profile = entry['linkedin_profile_link']
             full_name = ''
             reachout_name = entry['reachout_name']
             activity_log = json.dumps([{

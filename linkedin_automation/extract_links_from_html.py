@@ -49,7 +49,8 @@ def move(duration):
 
 
 
-def write_to_log(l):
+def write_to_log(l, profile):
+    l.update(profile)
     with open(LOG_PATH, 'a+') as log_file:
         log_file.write(json.dumps(l, indent=4) + ',\n')
         log_file.close()
@@ -127,51 +128,54 @@ def parse_html(html, start, end):
         if link in profiles_ordered and link not in link_dict.keys():
             value = transform_linkedin_username(a.text, link)
             link_dict[link] = value
+    
 
-    print(f"Amount of entries: {len(link_dict)}")
-    return link_dict
+    result = link_dict_to_dict_list(link_dict)
+    print(f"Amount of entries: {len(result)}")
+    return result
 
 
-def send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url, reachout_name):
+def send_with_random(cmd,message_to_send, is_dry_run, profile):
     os.system(cmd)
     wait_random()
     result = send_request_gui(message_to_send, is_dry_run, CONFIDENCE)
-    write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': result, 'reachout_name' : reachout_name})
+    write_to_log({'message': message_to_send,
+     'result': result}, profile)
 
 
-def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive, is_dry_run, is_network_run, is_just_log):
+def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactive, is_dry_run, is_network_run, is_just_log):
     idx = 0
     
-    with click.progressbar(range(len(entries.items())), show_pos=True, width=70) as bar:
-        for linkedin_profile_url, linkedin_profile_name in entries.items():
+    with click.progressbar(range(len(profiles)), show_pos=True, width=70) as bar:
+        for p in profiles:
             click.clear()
             bar.update(1)
             click.echo("\r\n")
             msg = messages[idx % len(messages)]
             idx = idx + 1
-            id = linkedin_profile_url.split('/in/')[1]
-            name = linkedin_profile_name
+            id = p['linkedin_profile_link'].split('/in/')[1]
             if msg != "none":
-                message_to_send = msg % (name)
+                message_to_send = msg % (p['reachout_name'])
                 click.secho("[Message]", bold=True, fg='green')
                 click.secho(message_to_send)
             else:
                 message_to_send = None
-            cmd = browser_cmd % linkedin_profile_url
+            cmd = browser_cmd % p['linkedin_profile_link']
             if is_network_run:
                 click.secho("[URL]", bold=True, fg='green')
-                click.secho(linkedin_profile_url)
+                click.secho(p['linkedin_profile_link'])
                 
                 ret_code = build_and_send_request(id,message_to_send)
                 if ret_code != 200:
-                    write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': "Error, return code:{ret_code}", 'reachout_name' : name})
+                    write_to_log({'message': message_to_send, 'result': "Error, return code:{ret_code}"},p)
                     click.secho(f"Error, return code:{ret_code}", fg='red')
                     return
-                write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': 'success', 'reachout_name': name})
+                write_to_log({'message': message_to_send, 'result': 'success'}, p)
+                
             elif is_just_log:
-                write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': 'success', 'reachout_name': name})
+                write_to_log({'message': message_to_send, 'result': 'success'}, p)
             else:
-                send_with_random(cmd,message_to_send, is_dry_run, linkedin_profile_url, name)
+                send_with_random(cmd,message_to_send, is_dry_run, p)
         
             if is_interactive:
                 input("<Enter> to proceed")
@@ -179,12 +183,7 @@ def send_by_method_for_each_entry(browser_cmd, messages, entries, is_interactive
 def load_from_sheet(sheet_name, path_to_credentials, start, end, current_user):
     sheet_c = GoogleSheetClient(path_to_credentials,'reachout_script_db',sheet_name,current_user)
     entries = sheet_c.sheet.get_all_records()
-    result = {}
-    for entry in entries[start: end]:
-        link = entry['linkedin_profile_link']
-        result[link] = entry['reachout_name']
-
-    return result
+    return entries[start: end]
 
 def load_from_csv(data, start, end, current_user):
     # Start by gathering all of the profiles which the current user didn't reach out to.
@@ -195,13 +194,7 @@ def load_from_csv(data, start, end, current_user):
         if not was_successful and current_user not in reached_out_by:
             filtered_list.append(entry)
 
-    print(f"Amount of profiles: {len(filtered_list)}")
-    result = {}
-    for entry in filtered_list[start: end]:
-        link = entry['linkedin_profile_link']
-        result[link] = entry['reachout_name']
-
-    return result
+    return filtered_list[start: end]
     
 
     
@@ -211,7 +204,11 @@ def load_from_log(json_log):
     ## start by de-duping, there might be a case a profile appears twice, and one of them was successful
     json_dict = {}
     for entry in json_log:    
-        link = entry['profile']
+        link = ''
+        if 'profile' in entry:
+            link = entry['profile']
+        else:
+            link = entry['linkedin_profile_link']
         value = entry['message'].split(' ')[1][:-1] # Get the first name from the message, remove comma
         if link in json_dict and json_dict[link][2] != 'success':
             json_dict[link] = (link, value, entry['result'])
@@ -221,11 +218,17 @@ def load_from_log(json_log):
     
     link_dict = {}
     for entry in json_dict.values():
-        print(entry)
         if entry[2] != 'success' and "verified email constraint" not in entry[2]:    
             link_dict[entry[0]] = entry[1]
-    return link_dict    
 
+    
+    return link_dict_to_dict_list(link_dict)
+
+def link_dict_to_dict_list(link_dict):
+    result = []
+    for key, values in link_dict:
+        result.append({'linkedin_profile_link': key, 'reachout_name': value})
+    return result
 
 def read_messages(config):
     messages = []
