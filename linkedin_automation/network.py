@@ -20,11 +20,16 @@ def build_and_send_request(id,msg):
         'action': 'verifyQuotaAndCreate',
         'decorationId': 'com.linkedin.voyager.dash.deco.relationships.InvitationCreationResultWithInvitee-2',
     }
-
-    json_data = {
-        'inviteeProfileUrn': 'urn:li:fsd_profile:' + id,
-        'customMessage': msg,
-    }
+    json_data = {}
+    if msg:
+        json_data = {
+            'inviteeProfileUrn': 'urn:li:fsd_profile:' + id,
+            'customMessage': msg,
+        }
+    else:
+        json_data = {
+            'inviteeProfileUrn': 'urn:li:fsd_profile:' + id,
+        }
     response = requests.post(
         'https://www.linkedin.com/voyager/api/voyagerRelationshipsDashMemberRelationships',
         params=params,
@@ -32,7 +37,7 @@ def build_and_send_request(id,msg):
         headers=headers,
         json=json_data,
     )
-    
+
     wait_time = random.randint(15, 45)  # Generate a random integer between 15 and 45
     print(f"\r\nWaiting {wait_time} seconds")
     time.sleep(wait_time)
