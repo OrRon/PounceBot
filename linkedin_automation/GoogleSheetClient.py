@@ -34,6 +34,27 @@ class GoogleSheetClient:
         return False
         
 
+    def update_row_state(self, entry, state):
+        key = entry['linkedin_profile_link']
+        cell = self.sheet.find(key)
+        if not cell: # if the key is not found
+            raise Exception('entry doesnt exist' + str(entry))
+
+        row = self.sheet.row_values(cell.row)
+
+        reachout_state = {}
+        try:
+            reachout_state = json.loads(row[8])
+        except:
+            pass
+
+        if 'public_identifier' in state:
+            row[9] = state.pop('public_identifier')
+
+        reachout_state[self.owner_name.lower()] = state
+        row[8] = json.dumps(reachout_state)
+        self.sheet.update(f"A{cell.row}:ZZ{cell.row}", [row])
+        
     
     def add_or_update_missing_entries(self, entry, flush=True):
         if (entry['result'] != 'success' and entry['result'] != 'blocked' and entry['result'] != 'pending'):
@@ -82,6 +103,7 @@ class GoogleSheetClient:
                 row[6] = entry['role']
             print(row)
             self.sheet.update(f"A{cell.row}:ZZ{cell.row}", [row])
+
     
 
 def main():
