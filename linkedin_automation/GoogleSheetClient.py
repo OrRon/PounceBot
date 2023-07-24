@@ -49,6 +49,13 @@ class GoogleSheetClient:
 
         row = self.sheet.row_values(cell.row)
 
+        has_reached_out = state['is_connected'] or state['invitation_type'] == 'sent'
+        if has_reached_out:
+            reached_out_by = json.loads(row[4])
+            merged_reached_out_by = json.dumps(
+                list(set(reached_out_by + [self.owner_name])))
+            row[4] = merged_reached_out_by
+
         reachout_state = {}
         try:
             reachout_state = json.loads(row[8])

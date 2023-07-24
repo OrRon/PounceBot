@@ -163,10 +163,11 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
             if mode == 'network':
                 click.secho("[URL]", bold=True, fg='green')
                 click.secho(linkedin_profile_url)
-                
-                ret_code = build_and_send_request(id,message_to_send)
+
+                ret_code = build_and_send_request(id, message_to_send)
                 if (ret_code != 200) and (ret_code != 406):
-                    write_to_log({'profile': linkedin_profile_url, 'message': message_to_send, 'result': "Error, return code:{ret_code}", 'reachout_name' : name})
+                    write_to_log({'profile': linkedin_profile_url, 'message': message_to_send,
+                                 'result': "Error, return code:{ret_code}", 'reachout_name': name})
                     click.secho(f"Error, return code:{ret_code}", fg='red')
                     return
                 write_to_log(
@@ -190,9 +191,6 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
 
 
 def update_db_for_connection(id, entry):
-    if not SHEET_CLIENT.reached_out_by_current_user(entry):
-        click.secho('Skipped, not reached out by current user')
-        return
     connection_state = get_connection_state(id)
     SHEET_CLIENT.update_row_state(entry, connection_state)
 
