@@ -162,7 +162,7 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
             cmd = browser_cmd % p['linkedin_profile_link']
             if mode == 'network':
                 click.secho("[URL]", bold=True, fg='green')
-                click.secho(linkedin_profile_url)
+                click.secho(p['linkedin_profile_link'])
 
                 ret_code = build_and_send_request(id, message_to_send)
                 if (ret_code != 200) and (ret_code != 406):
