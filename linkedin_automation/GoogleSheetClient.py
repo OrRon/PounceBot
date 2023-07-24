@@ -55,6 +55,11 @@ class GoogleSheetClient:
             merged_reached_out_by = json.dumps(
                 list(set(reached_out_by + [self.owner_name])))
             row[4] = merged_reached_out_by
+        elif state['invitation_state'] == 'not_sent': # remove if not reached out
+             reached_out_by = json.loads(row[4])
+             if self.owner_name in reached_out_by:
+                reached_out_by.remove(self.owner_name)
+                row[4] = json.dumps(reached_out_by)
 
         reachout_state = {}
         try:
