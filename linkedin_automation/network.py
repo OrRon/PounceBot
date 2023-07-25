@@ -45,7 +45,7 @@ def build_and_send_request(id, msg):
     wait_time = random.randint(15, 45)
     print(f"\r\nWaiting {wait_time} seconds")
     time.sleep(wait_time)
-    return response.status_code
+    return response
 
 
 def get_connection_state(profile):

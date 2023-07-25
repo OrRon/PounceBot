@@ -164,11 +164,11 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
                 click.secho("[URL]", bold=True, fg='green')
                 click.secho(p['linkedin_profile_link'])
 
-                ret_code = build_and_send_request(id, message_to_send)
-                if (ret_code != 200) and (ret_code != 406):
-                    write_to_log({'profile': linkedin_profile_url, 'message': message_to_send,
-                                 'result': "Error, return code:{ret_code}", 'reachout_name': name})
-                    click.secho(f"Error, return code:{ret_code}", fg='red')
+                response = build_and_send_request(id, message_to_send)
+                if (response.status_code != 200) and (response.status_code != 406):
+                    write_to_log(
+                    {'message': message_to_send, 'result': f"Error, return code:{response.status_code}"}, p)
+                    click.secho(f"Error, return code:{response.status_code} return response:{response.json()}", fg='red')
                     return
                 write_to_log(
                     {'message': message_to_send, 'result': 'success'}, p)
