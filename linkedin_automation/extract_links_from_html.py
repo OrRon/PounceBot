@@ -307,10 +307,13 @@ def print_state(args, config, entries, cmd):
     print(f"Log file: {LOG_PATH}")
     print(f"Confidence: {CONFIDENCE}")
     print(f"Coordinates factor: {COORDINATE_FACTOR}")
-
     print(f"Sleep start: {SLEEP_START}")
     print(f"Sleep end: {SLEEP_END}")
     print(f"Screen capture region: {SCREEN_CAPTURE_REGION}")
+    print(f"Cookies source: {config['general']['path_to_cookies']}")
+    print(f"Headers source: {config['general']['path_to_headers']}")
+    print(f"Google credentials source: {config['general']['path_to_credentials']}")
+
     return
 
 
