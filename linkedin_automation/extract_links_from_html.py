@@ -137,6 +137,24 @@ def send_with_random(cmd, message_to_send, is_dry_run, profile):
                   'result': result}, profile)
 
 
+
+def send_network(p, linkedin_profile_link, message_to_send):
+    click.secho("[URL]", bold=True, fg='green')
+    click.secho(p['linkedin_profile_link'])
+
+    response = build_and_send_request(linkedin_profile_link, message_to_send)
+    if (response.status_code != 200) and (response.status_code != 406):
+        write_to_log(
+        {'message': message_to_send, 'result': f"Error, return code:{response.status_code}"}, p)
+        click.secho(f"Error, return code:{response.status_code} return response:{response.json()}", fg='red')
+        return False
+    write_to_log(
+        {'message': message_to_send, 'result': 'success'}, p)
+    
+    wait_random(False)
+    return True
+
+
 def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactive, mode):
     idx = 0
 
@@ -147,7 +165,7 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
             click.echo("\r\n")
             msg = messages[idx % len(messages)]
             idx = idx + 1
-            id = p['linkedin_profile_link'].split('/in/')[1]
+            linkedin_id = p['linkedin_profile_link'].split('/in/')[1]
             if msg != "none" and mode != 'update-db':
                 message_to_send = msg % (p['reachout_name'])
                 click.secho("[Message]", bold=True, fg='green')
@@ -156,20 +174,9 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
                 message_to_send = None
             cmd = browser_cmd % p['linkedin_profile_link']
             if mode == 'network':
-                click.secho("[URL]", bold=True, fg='green')
-                click.secho(p['linkedin_profile_link'])
-
-                response = build_and_send_request(id, message_to_send)
-                if (response.status_code != 200) and (response.status_code != 406):
-                    write_to_log(
-                    {'message': message_to_send, 'result': f"Error, return code:{response.status_code}"}, p)
-                    click.secho(f"Error, return code:{response.status_code} return response:{response.json()}", fg='red')
-                    return
-                write_to_log(
-                    {'message': message_to_send, 'result': 'success'}, p)
-                
-                wait_random(False)
-
+                result = send_network(p, linkedin_id, message_to_send)   
+                if not result: # Failed:
+                    return 
             elif mode == 'just-log':
                 write_to_log(
                     {'message': message_to_send, 'result': 'success'}, p)
@@ -181,7 +188,7 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
                 click.secho(p['linkedin_profile_link'])
                 click.secho("[Name]", bold=True, fg='green')
                 click.secho(p['reachout_name'])
-                update_db_for_connection(id, p)
+                update_db_for_connection(linkedin_id, p)
 
             if is_interactive:
                 input("<Enter> to proceed")
