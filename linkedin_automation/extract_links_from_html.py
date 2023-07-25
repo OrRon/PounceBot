@@ -198,14 +198,14 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
                 click.secho(p['reachout_name'])
                 update_db_for_connection(linkedin_id, p)
 
-            if is_interactive:
+            if is_interactive:  
                 input("<Enter> to proceed")
 
 
 def update_db_for_connection(id, entry):
     connection_state = get_connection_state(id)
     SHEET_CLIENT.update_row_state(entry, connection_state)
-    wait_random()
+    wait_random(False)
 
 
 def load_from_sheet(sheet_name, path_to_credentials, start, end, current_user):
