@@ -16,7 +16,7 @@ import pyperclip
 from names_db import NamesDB
 from GoogleSheetClient import GoogleSheetClient
 
-from network import build_and_send_request, get_connection_state
+from NetworkSender import NetworkSender
 
 LOG_PATH = ''
 CONFIDENCE = 0.85
@@ -28,6 +28,7 @@ NAMES_DB = None
 SHEET_CLIENT = None
 SCREEN_CAPTURE_REGION = None
 TYPE_INTERVAL = 0.1
+NETWORK_SENDER = None
 
 screen_width, screen_height = pyautogui.size()
 
@@ -55,6 +56,7 @@ def write_to_log(l, profile):
         log_file.write(json.dumps(l, indent=4) + ',\n')
         log_file.close()
     SHEET_CLIENT.add_or_update_missing_entries(l)
+
 
 def contains_only_letters(word):
     pattern = r'^\p{L}{3,}$'
@@ -137,20 +139,21 @@ def send_with_random(cmd, message_to_send, is_dry_run, profile):
                   'result': result}, profile)
 
 
-
 def send_network(p, linkedin_profile_link, message_to_send):
     click.secho("[URL]", bold=True, fg='green')
     click.secho(p['linkedin_profile_link'])
 
-    response = build_and_send_request(linkedin_profile_link, message_to_send)
+    response = NETWORK_SENDER.build_and_send_request(
+        linkedin_profile_link, message_to_send)
     if (response.status_code != 200) and (response.status_code != 406):
         write_to_log(
-        {'message': message_to_send, 'result': f"Error, return code:{response.status_code}"}, p)
-        click.secho(f"Error, return code:{response.status_code} return response:{response.json()}", fg='red')
+            {'message': message_to_send, 'result': f"Error, return code:{response.status_code}"}, p)
+        click.secho(
+            f"Error, return code:{response.status_code} return response:{response.json()}", fg='red')
         return False
     write_to_log(
         {'message': message_to_send, 'result': 'success'}, p)
-    
+
     wait_random(False)
     return True
 
@@ -174,13 +177,13 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
                 message_to_send = None
             cmd = browser_cmd % p['linkedin_profile_link']
             if mode == 'network':
-                result = send_network(p, linkedin_id, message_to_send)   
-                if not result: # Failed:
-                    return 
+                result = send_network(p, linkedin_id, message_to_send)
+                if not result:  # Failed:
+                    return
             elif mode == 'network-verify':
                 if not SHEET_CLIENT.has_been_reached_out_by_current_user(p['linkedin_profile_link']):
-                    result = send_network(p, linkedin_id, message_to_send)   
-                    if not result: # Failed:
+                    result = send_network(p, linkedin_id, message_to_send)
+                    if not result:  # Failed:
                         return
                 else:
                     click.secho("Skipping: " + p['linkedin_profile_link'])
@@ -198,12 +201,12 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
                 click.secho(p['reachout_name'])
                 update_db_for_connection(linkedin_id, p)
 
-            if is_interactive:  
+            if is_interactive:
                 input("<Enter> to proceed")
 
 
-def update_db_for_connection(id, entry):
-    connection_state = get_connection_state(id)
+def update_db_for_connection(linkedin_id, entry):
+    connection_state = NETWORK_SENDER.get_connection_state(linkedin_id)
     SHEET_CLIENT.update_row_state(entry, connection_state)
     wait_random(False)
 
@@ -323,7 +326,8 @@ def main():
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
     src_type = ['csv', 'log', 'html', 'sheet']
-    mode_type = ['network', 'update-db', 'browser', 'just-log', 'dry-run', 'network-verify']
+    mode_type = ['network', 'update-db', 'browser',
+                 'just-log', 'dry-run', 'network-verify']
     parser = argparse.ArgumentParser()
     parser.add_argument("--src", help="html file path or log",
                         type=str, required=True)
@@ -366,6 +370,10 @@ def main():
 
     global TYPE_INTERVAL
     TYPE_INTERVAL = float(config['general']['type_interval'])
+
+    global NETWORK_SENDER
+    NETWORK_SENDER = NetworkSender(
+        config['general']['path_to_cookies'], config['general']['path_to_headers'])
     entries = {}
 
     if args.src_type == 'html':
@@ -398,9 +406,6 @@ def main():
     if input("Continue? [y/n]") != 'y':
         return
     send_by_method_for_each_entry(cmd, messages, entries, args.i, args.mode)
-
-
-
 
 
 def wait_random(move_mouse=True):
