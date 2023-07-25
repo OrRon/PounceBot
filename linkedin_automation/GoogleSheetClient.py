@@ -3,6 +3,7 @@ import gspread
 import datetime
 import json
 import os
+import argparse
 from google.oauth2.service_account import Credentials
 SCOPES = ['https://www.googleapis.com/auth/drive',
           'https://www.googleapis.com/auth/drive.file',
@@ -143,8 +144,21 @@ class GoogleSheetClient:
             self.sheet.update(f"A{cell.row}:ZZ{cell.row}", [row])
 
 
+
+def get_keys_from_sheet(s):
+    entries = s.sheet.get_all_records()
+    return set([r['linkedin_profile_link'] for r in entries])
+
 def main():
-    pass
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--src", help="name_of_sheet")
+    args = parser.parse_args()
+
+    db_sheet_client = GoogleSheetClient('env', 'reachout_script_db', 'main', '')
+    src_sheet_client = GoogleSheetClient('env', 'reachout_script_db', args.src, '')
+    diff = get_keys_from_sheet(src_sheet_client) - get_keys_from_sheet(db_sheet_client)
+    print(diff)
+
 
 
 if __name__ == '__main__':
