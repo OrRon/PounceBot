@@ -91,7 +91,7 @@ class GoogleSheetClient:
                 'result': entry['result'],
                 'type':'linked_in_connect_request',
                 'reachout_by': self.owner_name,
-                'ts':'',
+                'ts':str(datetime.datetime.now()),
                 'message':entry['message']}])
             reached_out_by = json.dumps([self.owner_name])
             row = [profile,
@@ -107,7 +107,6 @@ class GoogleSheetClient:
                 self.flush()
         else:  # if the key is found
             row = self.sheet.row_values(cell.row)
-            print('row type: ', type(row))
             merged_activity_log = json.dumps(json.loads(row[3]) + [{
                 'result': entry['result'],
                 'type':'linked_in_connect_request',
@@ -121,7 +120,6 @@ class GoogleSheetClient:
             row[4] = merged_reached_out_by
             if 'role' in entry:
                 row[6] = entry['role']
-            print(row)
             self.sheet.update(f"A{cell.row}:ZZ{cell.row}", [row])
 
 

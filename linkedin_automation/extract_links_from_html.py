@@ -56,11 +56,6 @@ def write_to_log(l, profile):
         log_file.close()
     SHEET_CLIENT.add_or_update_missing_entries(l)
 
-
-def random_seconds():
-    return random.randint(15, 45)
-
-
 def contains_only_letters(word):
     pattern = r'^\p{L}{3,}$'
     if re.match(pattern, word, re.UNICODE) is None:
@@ -172,6 +167,8 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
                     return
                 write_to_log(
                     {'message': message_to_send, 'result': 'success'}, p)
+                
+                wait_random(False)
 
             elif mode == 'just-log':
                 write_to_log(
@@ -193,6 +190,7 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
 def update_db_for_connection(id, entry):
     connection_state = get_connection_state(id)
     SHEET_CLIENT.update_row_state(entry, connection_state)
+    wait_random()
 
 
 def load_from_sheet(sheet_name, path_to_credentials, start, end, current_user):
@@ -387,11 +385,17 @@ def main():
     send_by_method_for_each_entry(cmd, messages, entries, args.i, args.mode)
 
 
-def wait_random():
+
+
+
+def wait_random(move_mouse=True):
     sleep_time = random.randint(SLEEP_START, SLEEP_END)
-    print(f"Sleeping {sleep_time} secs")
-    for i in range(int(sleep_time / MOUSE_MOVE_DURATION)):
-        move(MOUSE_MOVE_DURATION)
+    click.secho(f"Sleeping {sleep_time} secs")
+    if move_mouse:
+        for i in range(int(sleep_time / MOUSE_MOVE_DURATION)):
+            move(MOUSE_MOVE_DURATION)
+    else:
+        time.sleep(sleep_time)
 
 
 def find_img_in_screen(imgs, confidence):

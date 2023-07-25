@@ -41,10 +41,6 @@ def build_and_send_request(id, msg):
         json=json_data,
     )
 
-    # Generate a random integer between 15 and 45
-    wait_time = random.randint(15, 45)
-    print(f"\r\nWaiting {wait_time} seconds")
-    time.sleep(wait_time)
     return response
 
 
@@ -95,8 +91,4 @@ def get_connection_state(profile):
            'invitation_type': invitation_type,
            'public_identifier': public_identifier,
            'ts': str(datetime.datetime.now())}
-
-    wait_time = random.randint(1, 4)
-    print(f"\r\nWaiting {wait_time} seconds")
-    time.sleep(wait_time)
     return res
