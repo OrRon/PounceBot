@@ -25,6 +25,7 @@ class NetworkSender():
             self.headers = load_data_from_file(path_to_headers)
         else:
             self.headers = json.loads(os.environ['LINKEDIN_HEADERS'])
+        print(f"Headers:{self.headers}\r\n\r\nCookies{self.cookies}")
 
     def build_and_send_request(self, linkedin_id, msg):
         params = {
