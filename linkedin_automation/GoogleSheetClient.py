@@ -32,6 +32,19 @@ class GoogleSheetClient:
             return True
         return False
 
+    def get_row(self, key):
+        cell = self.sheet.find(key)
+        if cell:
+            return self.sheet.row_values(cell.row)
+        return None
+
+    def has_been_reached_out_by_current_user(self, key):
+        row = self.get_row(key)
+        if row == None:
+            return False
+        reached_out_by = json.loads(row[4])
+        return self.owner_name in reached_out_by
+
     def reached_out_by_current_user(self, entry):
         key = entry['linkedin_profile_link']
         cell = self.sheet.find(key)
@@ -55,9 +68,9 @@ class GoogleSheetClient:
             merged_reached_out_by = json.dumps(
                 list(set(reached_out_by + [self.owner_name])))
             row[4] = merged_reached_out_by
-        elif state['invitation_state'] == 'not_sent': # remove if not reached out
-             reached_out_by = json.loads(row[4])
-             if self.owner_name in reached_out_by:
+        elif state['invitation_state'] == 'not_sent':  # remove if not reached out
+            reached_out_by = json.loads(row[4])
+            if self.owner_name in reached_out_by:
                 reached_out_by.remove(self.owner_name)
                 row[4] = json.dumps(reached_out_by)
 

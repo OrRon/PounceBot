@@ -177,6 +177,14 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
                 result = send_network(p, linkedin_id, message_to_send)   
                 if not result: # Failed:
                     return 
+            elif mode == 'network-verify':
+                if not SHEET_CLIENT.has_been_reached_out_by_current_user(p['linkedin_profile_link']):
+                    result = send_network(p, linkedin_id, message_to_send)   
+                    if not result: # Failed:
+                        return
+                else:
+                    click.secho("Skipping: " + p['linkedin_profile_link'])
+                wait_random(False)
             elif mode == 'just-log':
                 write_to_log(
                     {'message': message_to_send, 'result': 'success'}, p)
@@ -315,7 +323,7 @@ def main():
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
     src_type = ['csv', 'log', 'html', 'sheet']
-    mode_type = ['network', 'update-db', 'browser', 'just-log', 'dry-run']
+    mode_type = ['network', 'update-db', 'browser', 'just-log', 'dry-run', 'network-verify']
     parser = argparse.ArgumentParser()
     parser.add_argument("--src", help="html file path or log",
                         type=str, required=True)
