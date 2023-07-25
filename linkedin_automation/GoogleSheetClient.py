@@ -2,6 +2,7 @@
 import gspread
 import datetime
 import json
+import os
 from google.oauth2.service_account import Credentials
 SCOPES = ['https://www.googleapis.com/auth/drive',
           'https://www.googleapis.com/auth/drive.file',
@@ -11,8 +12,14 @@ SCOPES = ['https://www.googleapis.com/auth/drive',
 
 class GoogleSheetClient:
     def __init__(self, path_to_credentials, sheet_name, inner_sheet_name, owner_name):
-        credentials = Credentials.from_service_account_file(
-            path_to_credentials, scopes=SCOPES)
+        credentials = None
+        if path_to_credentials == 'env':
+            creds = json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT'])
+            credentials = Credentials.from_service_account_info(
+                creds, scopes=SCOPES)
+        else:
+            credentials = Credentials.from_service_account_file(
+                path_to_credentials, scopes=SCOPES)
         self.client = gspread.authorize(credentials)
         self.sheet = self.client.open(sheet_name).worksheet(inner_sheet_name)
         self.owner_name = owner_name
