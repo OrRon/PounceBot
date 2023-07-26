@@ -115,6 +115,9 @@ class GoogleSheetClient:
                 'ts':str(datetime.datetime.now()),
                 'message':entry['message']}])
             reached_out_by = json.dumps([self.owner_name])
+            state = '{}'
+            public_identifier = ''
+            junk = '0' # Add this so that we could get a row with a null public_id
             row = [profile,
                    full_name,
                    reachout_name,
@@ -122,7 +125,10 @@ class GoogleSheetClient:
                    reached_out_by,
                    had_meeting,
                    role,
-                   email]
+                   email,
+                   state,
+                   public_identifier,
+                   junk]
             self.buffered_entries.append(row)
             if flush or len(self.buffered_entries) >= self.buffer_size:
                 self.flush()
