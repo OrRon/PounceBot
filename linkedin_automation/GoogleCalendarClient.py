@@ -18,7 +18,7 @@ class GoogleCalendarClient:
         self.client = build('calendar', 'v3', credentials=credentials)
         self.calendar_id = calendar_id
         # Calculate the start and end dates for the query
-        self.end_date = datetime.utcnow().isoformat() + 'Z'
+        self.end_date = (datetime.utcnow() + timedelta(days=60)).isoformat()  + 'Z'
         self.start_date = (datetime.utcnow() -
                            timedelta(days=days_back)).isoformat() + 'Z'
         self.blocklisted_event_names = ['starting time', 'date night',

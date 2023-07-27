@@ -335,9 +335,9 @@ def main():
     parser.add_argument("--src", help="html file path or log",
                         type=str, required=True)
     parser.add_argument("--src-type", help="source file type, choose from" +
-                        str(src_type), choices=src_type, required=True)
+                        str(src_type), choices=src_type, default='sheet',  required=False)
     parser.add_argument("--mode", help="script mode, choose from" +
-                        str(mode_type), choices=mode_type, required=True)
+                        str(mode_type), choices=mode_type,default='network', required=False)
     parser.add_argument("-i", help="wait for user input between profiles",
                         action='store_true', default=False)
     parser.add_argument(
