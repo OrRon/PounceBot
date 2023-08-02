@@ -200,6 +200,14 @@ def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactiv
                 click.secho("[Name]", bold=True, fg='green')
                 click.secho(p['reachout_name'])
                 update_db_for_connection(linkedin_id, p)
+            elif mode == 'check-print':
+                click.secho("[check print]", bold=True, fg='green')
+                click.secho("[URL]", bold=True, fg='green')
+                click.secho(p['linkedin_profile_link'])
+                click.secho("[state]", bold=True, fg='green')
+                conn_state = NETWORK_SENDER.get_connection_state(linkedin_id)
+                click.secho(conn_state)
+                
 
             if is_interactive:
                 input("<Enter> to proceed")
@@ -210,6 +218,10 @@ def update_db_for_connection(linkedin_id, entry):
     SHEET_CLIENT.update_row_state(entry, connection_state)
     wait_random(False)
 
+
+def load_from_cmd(linkedin_profile_link):
+    linkedin_profile_link = linkedin_profile_link.strip("/")
+    return [{'linkedin_profile_link': linkedin_profile_link, 'reachout_name': ''},]
 
 def load_from_sheet(sheet_name, path_to_credentials, start, end, current_user):
     sheet_c = GoogleSheetClient(
@@ -328,9 +340,9 @@ def main():
     else:
         cmd = '''open -a "Google Chrome" %s'''  # FIX_ME - check this works
 
-    src_type = ['csv', 'log', 'html', 'sheet']
+    src_type = ['csv', 'log', 'html', 'sheet', 'cmd']
     mode_type = ['network', 'update-db', 'browser',
-                 'just-log', 'dry-run', 'network-verify']
+                 'just-log', 'dry-run', 'network-verify', 'check-print']
     parser = argparse.ArgumentParser()
     parser.add_argument("--src", help="html file path or log",
                         type=str, required=True)
@@ -403,6 +415,8 @@ def main():
     elif args.src_type == 'sheet':
         entries = load_from_sheet(
             args.src, config['general']['path_to_credentials'], args.start, args.end, config['general']['name'])
+    elif args.src_type == 'cmd':
+        entries = load_from_cmd(args.src)
 
     print(f'{len(entries)} entries loaded')
     print_state(args, config, entries, cmd)
