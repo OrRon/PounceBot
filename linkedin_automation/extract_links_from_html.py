@@ -158,7 +158,7 @@ def send_network(p, linkedin_profile_link, message_to_send):
     return True
 
 
-def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactive, mode):
+def send_by_method_for_each_entry(browser_cmd, messages, profiles, is_interactive, mode, is_dry_run):
     idx = 0
 
     with click.progressbar(range(len(profiles)), show_pos=True, width=70) as bar:
@@ -422,7 +422,7 @@ def main():
     print_state(args, config, entries, cmd)
     if input("Continue? [y/n]") != 'y':
         return
-    send_by_method_for_each_entry(cmd, messages, entries, args.i, args.mode)
+    send_by_method_for_each_entry(cmd, messages, entries, args.i, args.mode, args.mode == 'dry-run')
 
 
 def wait_random(move_mouse=True):
@@ -456,6 +456,7 @@ def send_request_gui(msg, is_dry_run, confidence):
                           os.path.join('img', 'connect_main2.png'),
                           os.path.join('img', 'connect_main3.png'),
                           os.path.join('img', 'connect_main4.png'),
+                          os.path.join('img', 'connect_main5.png'),
                           os.path.join('img', 'connect_main_mac.png'),]
 
     main_pending = [os.path.join('img', 'main_pending.png'),
@@ -489,6 +490,8 @@ def send_request_gui(msg, is_dry_run, confidence):
                 ]
     send = [os.path.join('img', 'send.png'),
             os.path.join('img', 'send2.png'),
+            os.path.join('img', 'send3.png'),
+            os.path.join('img', 'send4.png'),
             os.path.join('img', 'send_mac.png'),]
 
     img_pending = find_img_in_screen(main_pending, confidence)
@@ -530,6 +533,8 @@ def send_request_gui(msg, is_dry_run, confidence):
         time.sleep(3)
         type(msg)
         time.sleep(3)
+    else:
+        print("no message")
 
     img_send = find_img_in_screen(send, confidence)
     if not img_send:
