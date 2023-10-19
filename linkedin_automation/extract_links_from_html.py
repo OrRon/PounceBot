@@ -457,6 +457,7 @@ def send_request_gui(msg, is_dry_run, confidence):
                           os.path.join('img', 'connect_main3.png'),
                           os.path.join('img', 'connect_main4.png'),
                           os.path.join('img', 'connect_main5.png'),
+                          os.path.join('img', 'connect_main6.png'),
                           os.path.join('img', 'connect_main_mac.png'),]
 
     main_pending = [os.path.join('img', 'main_pending.png'),
