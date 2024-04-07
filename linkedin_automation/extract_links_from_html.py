@@ -144,7 +144,7 @@ def send_network(p, linkedin_profile_link, message_to_send):
     click.secho(p['linkedin_profile_link'])
 
     response = NETWORK_SENDER.build_and_send_request(
-        linkedin_profile_link, message_to_send)
+        linkedin_profile_link.rstrip("/"), message_to_send)
     if (response.status_code != 200) and (response.status_code != 406):
         write_to_log(
             {'message': message_to_send, 'result': f"Error, return code:{response.status_code}"}, p)

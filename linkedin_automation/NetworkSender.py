@@ -7,7 +7,6 @@ import os
 
 OUR_PUBLIC_IDS = ['lior-saddan-b88a1013a', 'or-ron-5aa1aa15', 'itzikmizrachi']
 
-
 def load_data_from_file(file_name):
     with open(file_name, 'r') as file:
         data = json.load(file)
@@ -27,8 +26,9 @@ class NetworkSender():
             self.headers = json.loads(os.environ['LINKEDIN_HEADERS'])
 
     def build_and_send_request(self, linkedin_id, msg):
+        p = self.get_connection_state(linkedin_id)[0]
         params = {
-            'action': 'verifyQuotaAndCreate',
+            'action': 'verifyQuotaAndCreateV2',
             'decorationId': 'com.linkedin.voyager.dash.deco.relationships.InvitationCreationResultWithInvitee-2',
         }
         json_data = {}
@@ -39,7 +39,11 @@ class NetworkSender():
             }
         else:
             json_data = {
-                'inviteeProfileUrn': 'urn:li:fsd_profile:' + linkedin_id,
+                "invitee": {
+                    "inviteeUnion": {
+                        'memberProfile': p['urn'],
+                    }
+                }
             }
         response = requests.post(
             'https://www.linkedin.com/voyager/api/voyagerRelationshipsDashMemberRelationships',
@@ -48,22 +52,16 @@ class NetworkSender():
             headers=self.headers,
             json=json_data,
         )
-
         return response
 
     def get_connection_state(self, profile):
-        params = {
-            'decorationId': 'com.linkedin.voyager.dash.deco.identity.profile.TopCardSupplementary-130',
-            'q': 'memberIdentity',
-            'memberIdentity': profile,
-        }
 
         response = requests.get(
-            'https://www.linkedin.com/voyager/api/identity/dash/profiles',
-            params=params,
+            'https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=true&variables=(vanityName:' + profile + ')&queryId=voyagerIdentityDashProfiles.e8511bf881819fb8156472959c87f423',
             cookies=self.cookies,
             headers=self.headers,
-        )
+            allow_redirects=False, 
+            )
 
         is_connected = None
         invitation_state = None
@@ -89,9 +87,15 @@ class NetworkSender():
                     invitation_state = 'not_sent'
             if 'publicIdentifier' in attribute and attribute['publicIdentifier'] not in OUR_PUBLIC_IDS:
                 public_identifier = attribute['publicIdentifier']
+        data_elements = response_json["data"]["data"]["identityDashProfilesByMemberIdentity"]["*elements"]
+        for element in data_elements:
+            urn = element
+
+       
 
         res = {'is_connected': is_connected,
                'invitation_state': invitation_state,
+               'urn': urn,
                'invitation_type': invitation_type,
                'public_identifier': public_identifier,
                'ts': str(datetime.datetime.now())}
