@@ -10,3 +10,6 @@ tmp/
 .vscode
 __pycache__
 meetings.csv
+linkedin_automation/dump_json.py
+venv/
+env/
