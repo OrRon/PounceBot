@@ -35,8 +35,13 @@ class NetworkSender():
         json_data = {}
         if msg:
             json_data = {
-                'inviteeProfileUrn': 'urn:li:fsd_profile:' + linkedin_id,
+                "invitee": {
+                    "inviteeUnion": {
+                        'memberProfile': p['urn'],
+                    }
+                },
                 'customMessage': msg,
+                
             }
         else:
             json_data = {
