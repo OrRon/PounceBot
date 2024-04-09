@@ -26,7 +26,8 @@ class NetworkSender():
             self.headers = json.loads(os.environ['LINKEDIN_HEADERS'])
 
     def build_and_send_request(self, linkedin_id, msg):
-        p = self.get_connection_state(linkedin_id)[0]
+        p = self.get_connection_state(linkedin_id)
+        print(p)
         params = {
             'action': 'verifyQuotaAndCreateV2',
             'decorationId': 'com.linkedin.voyager.dash.deco.relationships.InvitationCreationResultWithInvitee-2',
