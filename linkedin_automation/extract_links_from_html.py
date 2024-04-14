@@ -268,7 +268,8 @@ def load_from_log(json_log):
 
 def link_dict_to_dict_list(link_dict):
     result = []
-    for key, values in link_dict:
+    print(f"Amount of entries: {len(link_dict)}")
+    for key, value in link_dict.items():
         result.append({'linkedin_profile_link': key, 'reachout_name': value})
     return result
 
