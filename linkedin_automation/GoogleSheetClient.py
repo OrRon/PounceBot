@@ -95,7 +95,7 @@ class GoogleSheetClient:
         row[8] = json.dumps(reachout_state)
         self.sheet.update(f"A{cell.row}:ZZ{cell.row}", [row])
 
-    def add_or_update_missing_entries(self, entry, flush=True):
+    def add_or_update_missing_entries(self, entry, flush=False):
         if (entry['result'] != 'success' and entry['result'] != 'blocked' and entry['result'] != 'pending'):
             return
         key = entry['linkedin_profile_link']
